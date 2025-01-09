@@ -1,0 +1,11 @@
+HTTP/1.1 200 
+Set-Cookie: JSESSIONID=7F1B038AA08FF23B6585B1828FA4522D; Path=/operaton; HttpOnly;SameSite=Lax
+X-XSRF-TOKEN: 6C3EB246B5FC5822BE9AC9433D6C39BD
+X-XSS-Protection: 1; mode=block
+Content-Security-Policy: base-uri 'self';script-src 'nonce-BTw7fREYYSZ8YqvbkS6i8iBBUPc' 'strict-dynamic' 'unsafe-eval' https: 'self' 'unsafe-inline';style-src 'unsafe-inline' 'self';default-src 'self';img-src 'self' data:;block-all-mixed-content;form-action 'self';frame-ancestors 'none';object-src 'none';sandbox allow-forms allow-scripts allow-same-origin allow-popups allow-downloads
+X-Content-Type-Options: nosniff
+Set-Cookie: XSRF-TOKEN=6C3EB246B5FC5822BE9AC9433D6C39BD;Path=/operaton;SameSite=Lax
+Content-Type: text/html;charset=UTF-8
+Content-Length: 3059
+Date: Mon, 06 Jan 2025 09:13:27 GMT
+

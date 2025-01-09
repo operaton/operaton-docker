@@ -1,0 +1,88 @@
+services:
+    operaton:
+        image: ${IMAGE_REGISTRY}:${DISTRO}-${PLATFORM}
+        platform: linux/${PLATFORM}
+        ports:
+            - "8080:8080"
+        restart: unless-stopped
+
+    operaton-mysql:
+        image: ${IMAGE_REGISTRY}:${DISTRO}-${PLATFORM}
+        platform: linux/${PLATFORM}
+        environment:
+            - DB_DRIVER=com.mysql.cj.jdbc.Driver
+            - DB_URL=jdbc:mysql://mysql:3306/process-engine?sendFractionalSeconds=false&sessionVariables=transaction_isolation='READ-COMMITTED'
+            - DB_USERNAME=operaton
+            - DB_PASSWORD=operaton
+            - WAIT_FOR=mysql:3306
+        links:
+            - mysql
+        ports:
+            - "8080:8080"
+        restart: unless-stopped
+
+    operaton-postgres:
+        image: ${IMAGE_REGISTRY}:${DISTRO}-${PLATFORM}
+        platform: linux/${PLATFORM}
+        environment:
+            - DB_DRIVER=org.postgresql.Driver
+            - DB_URL=jdbc:postgresql://postgres:5432/operaton
+            - DB_USERNAME=operaton
+            - DB_PASSWORD=operaton
+            - WAIT_FOR=postgres:5432
+        links:
+            - postgres
+        ports:
+            - "8080:8080"
+        restart: unless-stopped
+
+    operaton-debug:
+        image: ${IMAGE_REGISTRY}:${DISTRO}-${PLATFORM}
+        platform: linux/${PLATFORM}
+        environment:
+            - DEBUG=true
+        ports:
+            - "8080:8080"
+            - "8000:8000"
+        restart: unless-stopped
+
+    operaton-prometheus-jmx:
+        image: ${IMAGE_REGISTRY}:${DISTRO}-${PLATFORM}
+        platform: linux/${PLATFORM}
+        environment:
+            - JMX_PROMETHEUS=true
+        ports:
+            - "8080:8080"
+            - "9404:9404"
+        restart: unless-stopped
+
+    operaton-password-file:
+        image: ${IMAGE_REGISTRY}:${DISTRO}-${PLATFORM}
+        platform: linux/${PLATFORM}
+        environment:
+            - DB_DRIVER=com.mysql.cj.jdbc.Driver
+            - DB_URL=jdbc:mysql://mysql:3306/process-engine?sendFractionalSeconds=false&sessionVariables=transaction_isolation='READ-COMMITTED'
+            - DB_USERNAME=operaton
+            - DB_PASSWORD_FILE=/run/secrets/operaton_db_password
+            - WAIT_FOR=mysql:3306
+        volumes:
+            - $PWD/db-password.txt:/run/secrets/operaton_db_password
+        links:
+            - mysql
+        ports:
+            - "8080:8080"
+        restart: unless-stopped
+
+    mysql:
+        image: mysql:8.0
+        environment:
+            - MYSQL_ROOT_PASSWORD=operaton
+            - MYSQL_USER=operaton
+            - MYSQL_PASSWORD=operaton
+            - MYSQL_DATABASE=process-engine
+
+    postgres:
+        image: postgres:15
+        environment:
+            - POSTGRES_USER=operaton
+            - POSTGRES_PASSWORD=operaton
