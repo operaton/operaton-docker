@@ -1,0 +1,33 @@
+services:
+  operaton:
+    image: operaton:tomcat
+    container_name: operaton
+    environment:
+      - DB_DRIVER=com.mysql.cj.jdbc.Driver
+      - DB_URL=jdbc:mysql://mysql:3306/operaton?autoReconnect=true
+      - DB_USERNAME=root
+      - DB_PASSWORD=rootpassword
+      - OPERATON_WEBAPP_NAME=operaton
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    restart: always
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=operaton
+      - MYSQL_INITDB_EXTRA_ARGS=--transaction-isolation=READ-COMMITTED
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: always
+
+volumes:
+  mysql-data:
+    driver: local
+
