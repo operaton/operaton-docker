@@ -33,14 +33,16 @@ jobs:
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORM: ${{ matrix.PLATFORM }}
-          IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY }}
+          IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
+          IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
       - name: Test
         run: ./test.sh
         working-directory: test
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORM: ${{ matrix.PLATFORM }}
-          IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY }}
+          IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
+          IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
   publish:
     runs-on: ubuntu-20.04
     needs: build-and-test
@@ -73,4 +75,5 @@ jobs:
           PLATFORMS: linux/arm64,linux/amd64
           DOCKERHUB_USERNAME:  ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-          IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY }}
+          IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
+          IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}

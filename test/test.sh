@@ -1,5 +1,13 @@
 #!/bin/bash -xeu
 
+if [ "$DISTRO" == "run" ]; then
+  IMAGE_NAME=${IMAGE_REPO_OPERATON}:${PLATFORM}
+elif [ "$DISTRO" == "tomcat" ]; then
+  IMAGE_NAME=${IMAGE_REPO_TOMCAT}:${PLATFORM}
+fi
+
+export IMAGE_NAME
+
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 cd ${DIR}
