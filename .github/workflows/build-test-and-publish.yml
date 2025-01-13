@@ -71,6 +71,6 @@ jobs:
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORMS: linux/arm64,linux/amd64
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          DOCKER_HUB_USERNAME:  ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKERHUB_USERNAME:  ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
           IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY }}
