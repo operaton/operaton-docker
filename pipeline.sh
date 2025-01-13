@@ -12,7 +12,11 @@ else
   VERSION_ARGUMENT="--build-arg VERSION=${VERSION}"
 fi
 
-IMAGE_NAME=${IMAGE_REGISTRY}:${DISTRO}-${PLATFORM}
+if [ "$DISTRO" == "run" ]; then
+  IMAGE_NAME=${IMAGE_REPO_OPERATON}:${PLATFORM}
+elif [ "$DISTRO" == "tomcat" ]; then
+  IMAGE_NAME=${IMAGE_REPO_TOMCAT}:${PLATFORM}
+fi
 
 docker buildx build .                         \
     -t "${IMAGE_NAME}"                        \

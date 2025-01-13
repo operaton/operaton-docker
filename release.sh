@@ -4,7 +4,12 @@ VERSION=${VERSION:-$(grep VERSION= Dockerfile | head -n1 | cut -d = -f 2)}
 DISTRO=${DISTRO:-$(grep DISTRO= Dockerfile | cut -d = -f 2)}
 SNAPSHOT=${SNAPSHOT:-$(grep SNAPSHOT= Dockerfile | cut -d = -f 2)}
 PLATFORMS=${PLATFORMS:-linux/amd64}
-IMAGE=${IMAGE_REGISTRY}
+
+if [ "$DISTRO" == "run" ]; then
+  IMAGE=${IMAGE_REPO_OPERATON}
+elif [ "$DISTRO" == "tomcat" ]; then
+  IMAGE=${IMAGE_REPO_TOMCAT}
+fi
 
 function build_and_push {
     local tags=("$@")
@@ -21,7 +26,7 @@ function build_and_push {
 }
 
 # check whether the image for distro was already released and exit in that case
-if [ $(docker manifest inspect $IMAGE:${DISTRO}-${VERSION} > /dev/null ; echo $?) == '0' ]; then
+if [ $(docker manifest inspect $IMAGE:${VERSION} > /dev/null ; echo $?) == '0' ]; then
     echo "Not pushing already released image"
     exit 0
 fi
@@ -31,19 +36,11 @@ docker login -u "${DOCKERHUB_USERNAME}" -p "${DOCKERHUB_PASSWORD}"
 tags=()
 
 if [ "${SNAPSHOT}" = "true" ]; then
-    tags+=("${DISTRO}-${VERSION}-SNAPSHOT")
-    tags+=("${DISTRO}-SNAPSHOT")
-
-    if [ "${DISTRO}" = "tomcat" ]; then
-        tags+=("${VERSION}-SNAPSHOT")
-        tags+=("SNAPSHOT")
-    fi
+    tags+=("${VERSION}-SNAPSHOT")
+    tags+=("SNAPSHOT")
 else
-    tags+=("${DISTRO}-${VERSION}")
-    if [ "${DISTRO}" = "run" ]; then
-        tags+=("${VERSION}")
-        tags+=("latest")
-    fi
+    tags+=("${VERSION}")
+    tags+=("latest")
 fi
 
 build_and_push "${tags[@]}"
