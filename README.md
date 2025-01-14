@@ -1,13 +1,13 @@
 # Operaton Docker images
 
-> Use our [GitHub issue tracker](https://github.com/operaton/operaton/issues) for bug reports or feature requests.
+> Use our [GitHub issue tracker](https://github.com/operaton/operaton-docker/issues) for bug reports or feature requests.
 > For help requests, open a help request topic on the [Operaton forum](https://forum.operaton.org/)
 
 This Operaton project provides docker images of the latest 
 Operaton releases. The images can be used to demonstrate and test the
 Operaton or can be extended with own process applications. It is
-planned to provide images on the official [docker registry][] for every upcoming
-release, which includes alpha releases.
+planned to provide images on the official [docker registry](https://hub.docker.com/u/operaton) for every upcoming
+release, which includes snapshot releases.
 
 The Operaton Docker images are wrappers for the pre-packaged Operaton
 distributions. The pre-packaged distributions are intended for users who want a 
@@ -19,17 +19,17 @@ in production, consider reading our [security instructions](https://docs.operato
 You can find more detailed documentation on the pre-packaged (community) 
 distributions that Operaton provides at the following links:
 
-* Apache Tomcat - [Operaton Tomcat integration documentation](https://docs.operaton.org/manual/latest/user-guide/runtime-container-integration/tomcat/)
-* Wildfly - [Operaton Wildfly Subsystem documentation](https://docs.operaton.org/manual/latest/user-guide/runtime-container-integration/jboss/)
-* Operaton Run - [documentation](https://docs.operaton.org/manual/latest/user-guide/operaton-bpm-run/)
+* Operaton - [documentation](https://docs.operaton.org/manual/latest/user-guide/operaton-run/)
+* Operaton Tomcat - [Operaton Tomcat integration documentation](https://docs.operaton.org/manual/latest/user-guide/runtime-container-integration/tomcat/)
+* Operaton Wildfly - [Operaton Wildfly Subsystem documentation](https://docs.operaton.org/manual/latest/user-guide/runtime-container-integration/jboss/)
 
 ## Get started
 
-To start a Docker container of the latest Operaton 7 release:
+To start a Docker container of the latest Operaton release:
 
 ```
-docker pull operaton/operaton-bpm:latest
-docker run -d --name operaton -p 8080:8080 operaton/operaton-bpm:latest
+docker pull operaton/operaton:latest
+docker run -d --name operaton -p 8080:8080 operaton/operaton:latest
 ```
 
 ### Tasklist, Cockpit, Admin web apps
@@ -44,7 +44,7 @@ The default credentials for admin access to the web apps is:
 
 ### REST API
 
-The Operaton Rest-API is accessible through: http://localhost:8080/engine-rest
+The Operaton REST API is accessible through: http://localhost:8080/engine-rest
 
 See the [REST API](https://docs.operaton.org/manual/latest/reference/rest/)
 documentation for more details on how to use it.
@@ -63,14 +63,14 @@ application server distributions of Operaton.
 - `${VERSION}`, `${DISTRO}-${VERSION}`: A specific version of Operaton.
 
 `${DISTRO}` can be one of the following: 
+* `operaton`
 * `tomcat`
 * `wildfly`
-* `run`
 
-If no `${DISTRO}` is specified, the `tomcat` distribution is used. For all 
+If no `${DISTRO}` is specified, the `operaton` distribution is used. For all 
 available tags see the [docker hub tags][].
 
-## Operaton 7 configuration
+## Operaton configuration
 
 You can find the complete Operaton documentation at https://docs.operaton.org/.
 
@@ -83,9 +83,9 @@ following links useful:
 
 ## Operaton Docker image configuration
 
-### Configuration of the `run` distribution
+### Configuration of the `operaton` distribution
 
-Because `run` is a Spring Boot-based distribution, it can be configured through 
+Because `operaton` is a Spring Boot-based distribution, it can be configured through 
 the respective environment variables. For example:
 - `SPRING_DATASOURCE_DRIVER_CLASS_NAME` the database driver class name, 
   supported are h2 (default), mysql, and postgresql:
@@ -116,7 +116,7 @@ when provided:
 The `JMX_PROMETHEUS` configuration is not supported, and while `DEBUG` can be 
 used to enable debug output, it doesn't start a debug socket.
 
-`run` supports different startup options to choose whether or not to enable the 
+`operaton` supports different startup options to choose whether or not to enable the 
 WebApps, the REST API or Swagger UI. By default, all three are enabled.
 
 Passing startup parameters to enable them selectively can be done by passing any 
@@ -126,11 +126,11 @@ example:
 Enable only web apps:
 
 ```bash
-docker run operaton/operaton-bpm:run ./operaton.sh --webapps
+docker run operaton/operaton ./operaton.sh --webapps
 ``` 
 Enable only REST API and Swagger UI:
 ```bash
-docker run operaton/operaton-bpm:run ./operaton.sh --rest --swaggerui
+docker run operaton/operaton ./operaton.sh --rest --swaggerui
 ```
 
 Additionally, a `--production` parameter is supported to switch the 
@@ -142,11 +142,7 @@ disables Swagger UI by default.
 Our docker images are using a LTS OpenJDK version supported by
 Operaton. This currently means:
 
- - Operaton 7.20 or later will be based on OpenJDK 17.
-   - Operaton 7.20 image for Operaton Run is supported only for JDK 17.
- - Operaton 7.12 - 7.19 is based on OpenJDK 11.
-   - Operaton 7.19 image for WildFly is supported only for JDK 11 and JDK 17.
- - All previous versions are based on OpenJDK 8.
+ - Operaton 1.0 or later will be based on OpenJDK 17.
 
 While all the OpenJDK versions supported by Operaton will work with the exceptions specified above,
 we will not provide ready to use images for them.
@@ -197,7 +193,7 @@ variables:
 For example, to use a `postgresql` docker image as database you can start the
 as follows:
 
-```
+```bash
 # start postgresql image with database and user configured
 docker run -d --name postgresql ...
 
@@ -207,7 +203,7 @@ docker run -d --name operaton -p 8080:8080 --link postgresql:db \
            -e DB_USERNAME=operaton \
            -e DB_PASSWORD=operaton \
            -e WAIT_FOR=db:5432 \
-           operaton/operaton-bpm:latest
+           operaton/operaton:latest
 ```
 
 Another option is to save the database config to an environment file, i.e.
@@ -223,9 +219,9 @@ WAIT_FOR=db:5432
 
 Use this file to start the container:
 
-```
+```bash
 docker run -d --name operaton -p 8080:8080 --link postgresql:db \
-           --env-file db-env.txt operaton/operaton-bpm:latest
+           --env-file db-env.txt operaton/operaton:latest
 ```
 
 The docker image already contains drivers for `h2`, `mysql`, and `postgresql`.
@@ -237,9 +233,9 @@ To skip the configuration of the database by the docker container and use your
 own configuration set the environment variable `SKIP_DB_CONFIG` to a non-empty 
 value:
 
-```
+```bash
 docker run -d --name operaton -p 8080:8080 -e SKIP_DB_CONFIG=true \
-           operaton/operaton-bpm:latest
+           operaton/operaton:latest
 ```
 
 ### Waiting for database
@@ -272,7 +268,7 @@ docker run -d --name operaton -p 8080:8080 --link postgresql:db \
            -e DB_PASSWORD=operaton \
            -e WAIT_FOR=db:5432 \
            -e WAIT_FOR_TIMEOUT=60 \
-           operaton/operaton-bpm:latest
+           operaton/operaton:latest
 ```
 
 ### Volumes
@@ -303,30 +299,29 @@ and `tomcat` distributions.
 To change the timezone of the docker container, you can set the environment
 variable `TZ`.
 
-```
+```bash
 docker run -d --name operaton -p 8080:8080 \
            -e TZ=Europe/Berlin \
-          operaton/operaton-bpm:latest
+          operaton/operaton:latest
 ```
 
 ## Build
 
 You can build a Docker image for a given Operaton version and distribution yourself.
-Make sure to adjust the [settings.xml](settings.xml) and remove the `operaton-nexus` mirror 
 
 ### Build a released version
 
 To build a community image specify the `DISTRO` and `VERSION` build
 argument. Possible values for `DISTRO` are:
+* `operaton`
 * `tomcat`
 * `wildfly`
-* `run` (if the Operaton version already supports it)
 
 The `VERSION` argument is the Operaton version you want to build, 
-i.e. `7.17.0`.
+i.e. `1.0.0`.
 
-```
-docker build -t operaton-bpm\
+```bash
+docker build -t operaton \
   --build-arg DISTRO=${DISTRO} \
   --build-arg VERSION=${VERSION} \
   .
@@ -337,8 +332,8 @@ docker build -t operaton-bpm\
 Additionally, you can build `SNAPSHOT` versions for the upcoming releases by
 setting the `SNAPSHOT` build argument to `true`.
 
-```
-docker build -t operaton-bpm\
+```bash
+docker build -t operaton \
   --build-arg DISTRO=${DISTRO} \
   --build-arg VERSION=${VERSION} \
   --build-arg SNAPSHOT=true \
@@ -355,8 +350,8 @@ You can pass the following arguments to set proxy settings to Maven:
 
 Example for a released version of a community edition:
 
-```
-docker build -t operaton-bpm\
+```bash
+docker build -t operaton \
   --build-arg DISTRO=${DISTRO} \
   --build-arg VERSION=${VERSION} \
   --build-arg MAVEN_PROXY_HOST=${PROXY_HOST} \
@@ -368,8 +363,8 @@ docker build -t operaton-bpm\
 ### Override MySQL and PostgreSQL driver versions. 
 By default, the driver versions are fetched from https://github.com/operaton/operaton/blob/master/database/pom.xml. That can be overriden by passing `MYSQL_VERSION` and `POSTGRESQL_VERSION` build args
 
-```
-docker build -t operaton-bpm\
+```bash
+docker build -t operaton \
   --build-arg DISTRO=${DISTRO} \
   --build-arg VERSION=${VERSION} \
   --build-arg POSTGRESQL_VERSION=${POSTGRESQL_VERSION} \
@@ -385,10 +380,10 @@ You can use docker volumes to link your own configuration files inside the
 container.  For example, if you want to change the `bpm.xml` on 
 Apache Tomcat:
 
-```
+```bash
 docker run -d --name operaton -p 8080:8080 \
            -v $PWD/bpm.xml:/operaton/conf/bpm.xml \
-           operaton/operaton-bpm:latest
+           operaton/operaton:latest
 ```
 
 ### Add own process application
@@ -397,10 +392,10 @@ If you want to add your own process application to the docker container, you can
 use Docker volumes. For example, if you want to deploy the [twitter demo][] 
 on Apache Tomcat:
 
-```
+```bash
 docker run -d --name operaton -p 8080:8080 \
            -v /PATH/TO/DEMO/twitter.war:/operaton/webapps/twitter.war \
-           operaton/operaton-bpm:latest
+           operaton/operaton:latest
 ```
 
 This also allows you to modify the app outside the container, and it will
@@ -415,10 +410,10 @@ only have to overlay the deployment folder of the application server with
 a directory on your local machine. So in Apache Tomcat, you would mount a 
 directory to `/operaton/webapps/`:
 
-```
+```bash
 docker run -d --name operaton -p 8080:8080 \
            -v $PWD/webapps/:/operaton/webapps/ \
-           operaton/operaton-bpm:latest
+           operaton/operaton:latest
 ```
 
 
@@ -429,8 +424,8 @@ easy to create your own image. This way you can deploy your applications
 with docker or provided an own demo image. Just specify in the `FROM`
 clause which Operaton image you want to use as a base image:
 
-```
-FROM operaton/operaton-bpm:tomcat-latest
+```dockerfile
+FROM operaton/operaton:tomcat-latest
 
 ADD my.war /operaton/webapps/my.war
 ```
@@ -440,7 +435,7 @@ ADD my.war /operaton/webapps/my.war
 Branches and their roles in this repository:
 
 - `next` (default branch) is the branch where new features and bugfixes needed 
-  to support the current `master` of [operaton-bpm-repo](https://github.com/operaton/operaton) go.
+  to support the current `master` of [operaton-repo](https://github.com/operaton/operaton) go.
 - `7.x` branches get created from `next` when a Operaton minor version
   is released. They only receive backports of bugfixes when absolutely necessary.
 
@@ -451,5 +446,5 @@ Apache License, Version 2.0
 
 
 [twitter demo]: https://github.com/operaton-consulting/code/tree/master/one-time-examples/twitter
-[docker registry]: https://hub.docker.com/r/operaton/operaton-bpm/
-[docker hub tags]: https://hub.docker.com/r/operaton/operaton-bpm/tags/
+[docker registry]: https://hub.docker.com/r/operaton/operaton/
+[docker hub tags]: https://hub.docker.com/r/operaton/operaton/tags/
