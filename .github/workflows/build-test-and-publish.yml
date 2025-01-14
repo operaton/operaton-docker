@@ -1,13 +1,45 @@
 name: Build, test, and publish
-on: [pull_request, push, workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      distribution:
+        description: 'The distribution to build'
+        required: true
+        default: '["run"]'
+        options:
+          - '["run"]'
+          - '["tomcat"]'
+          - '["run", "tomcat"]'
+      platform:
+        description: 'The platform to build for'
+        required: true
+        default: '["amd64"]'
+        options:
+          - '["amd64"]'
+          - '["arm64"]'
+          - '["amd64", "arm64"]'
+      version:
+        description: 'The version to build'
+        required: false
+        default: '1.0.0-beta-3'
+      snapshot:
+        description: 'Build a snapshot version'
+        type: boolean
+        required: false
+        default: true
+
+  release:
+    repositories:
+      - 'operaton/operaton'
+    types: [published]
 jobs:
   build-and-test:
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        DISTRO: [run, tomcat]
-        PLATFORM: [amd64, arm64]
+        DISTRO: ${{ fromJson(github.event.inputs.distribution || '["run", "tomcat"]') }}
+        PLATFORM: ${{ fromJson(github.event.inputs.platform || '["amd64", "arm64"]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -15,7 +47,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
         if: ${{ matrix.PLATFORM != 'amd64' }}
         with:
-            platforms: ${{ matrix.PLATFORM }}
+          platforms: ${{ matrix.PLATFORM }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Expose GitHub Runtime
@@ -33,6 +65,8 @@ jobs:
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORM: ${{ matrix.PLATFORM }}
+          VERSION: ${{ github.event.inputs.version || '' }}
+          SNAPSHOT: ${{ github.event.inputs.snapshot || '' }}
           IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
           IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
       - name: Test
@@ -41,6 +75,8 @@ jobs:
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORM: ${{ matrix.PLATFORM }}
+          VERSION: ${{ github.event.inputs.version || '' }}
+          SNAPSHOT: ${{ github.event.inputs.snapshot || '' }}
           IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
           IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
   publish:
@@ -73,7 +109,9 @@ jobs:
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORMS: linux/arm64,linux/amd64
-          DOCKERHUB_USERNAME:  ${{ secrets.DOCKERHUB_USERNAME }}
+          VERSION: ${{ github.event.inputs.version || '' }}
+          SNAPSHOT: ${{ github.event.inputs.snapshot || '' }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
           IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
           IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
