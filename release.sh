@@ -9,6 +9,8 @@ if [ "$DISTRO" == "run" ]; then
   IMAGE=${IMAGE_REPO_OPERATON}
 elif [ "$DISTRO" == "tomcat" ]; then
   IMAGE=${IMAGE_REPO_TOMCAT}
+elif [ "$DISTRO" == "wildfly" ]; then
+  IMAGE=${IMAGE_REPO_WILDFLY}
 fi
 
 function build_and_push {
