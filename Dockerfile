@@ -19,7 +19,7 @@ RUN apk add --no-cache \
 
 COPY settings.xml download.sh operaton-run.sh operaton-tomcat.sh operaton-wildfly.sh  /tmp/
 
-RUN /tmp/download.sh
+RUN /tmp/download.sh ${VERSION} ${DISTRO}
 COPY operaton-lib.sh /operaton/
 
 
