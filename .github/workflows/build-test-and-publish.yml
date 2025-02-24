@@ -9,7 +9,8 @@ on:
         options:
           - '["run"]'
           - '["tomcat"]'
-          - '["run", "tomcat"]'
+          - '["wildfly"]'
+          - '["run", "tomcat", "wildfly"]'
       platform:
         description: 'The platform to build for'
         required: true
@@ -21,7 +22,7 @@ on:
       version:
         description: 'The version to build'
         required: false
-        default: '1.0.0-beta-3'
+        default: '1.0.0-beta-4'
       snapshot:
         description: 'Build a snapshot version'
         type: boolean
