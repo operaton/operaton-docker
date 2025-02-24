@@ -29,6 +29,7 @@ function build_and_push {
     docker buildx build .                         \
         $tag_arguments                            \
         --build-arg DISTRO=${DISTRO}              \
+        --build-arg VERSION=${VERSION}            \
         --cache-from type=gha,scope="$GITHUB_REF_NAME-$DISTRO-image" \
         --platform $PLATFORMS \
         --push
