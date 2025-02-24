@@ -1,5 +1,13 @@
 #!/bin/sh -ex
 
+VERSION=${1}
+DISTRO=${2}
+
+if [ -z "$VERSION" ]; then
+  echo "VERSION is not set"
+  exit 1
+fi
+
 echo "Downloading Operaton ${VERSION} for ${DISTRO}"
 
 if [ "$DISTRO" = "run" ]; then

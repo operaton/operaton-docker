@@ -1,8 +1,18 @@
 #!/bin/bash -eux
 
-VERSION=${VERSION:-$(grep VERSION= Dockerfile | head -n1 | cut -d = -f 2)}
-DISTRO=${DISTRO:-$(grep DISTRO= Dockerfile | cut -d = -f 2)}
-SNAPSHOT=${SNAPSHOT:-$(grep SNAPSHOT= Dockerfile | cut -d = -f 2)}
+if [ -z "$DISTRO" ]; then
+  echo "DISTRO is not set"
+  exit 1
+fi
+if [ -z "$VERSION" ]; then
+  echo "VERSION is not set"
+  exit 1
+fi
+if [ -z "$SNAPSHOT" ]; then
+  echo "SNAPSHOT is not set"
+  exit 1
+fi
+
 PLATFORMS=${PLATFORMS:-linux/amd64}
 
 if [ "$DISTRO" == "run" ]; then
@@ -19,6 +29,7 @@ function build_and_push {
     docker buildx build .                         \
         $tag_arguments                            \
         --build-arg DISTRO=${DISTRO}              \
+        --build-arg VERSION=${VERSION}            \
         --cache-from type=gha,scope="$GITHUB_REF_NAME-$DISTRO-image" \
         --platform $PLATFORMS \
         --push

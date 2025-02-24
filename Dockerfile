@@ -1,6 +1,6 @@
-FROM alpine:3.18 AS builder
+FROM alpine:3.21 AS builder
 
-ARG VERSION=1.0.0-beta-3
+ARG VERSION
 ARG DISTRO=run
 ARG SNAPSHOT=true
 
@@ -19,17 +19,17 @@ RUN apk add --no-cache \
 
 COPY settings.xml download.sh operaton-run.sh operaton-tomcat.sh operaton-wildfly.sh  /tmp/
 
-RUN /tmp/download.sh
+RUN /tmp/download.sh ${VERSION} ${DISTRO}
 COPY operaton-lib.sh /operaton/
 
 
 ##### FINAL IMAGE #####
 
-FROM alpine:3.18
+FROM alpine:3.21
 
 ARG VERSION=7.23.0
 
-ENV OPERATON_VERSION=${VERSION}
+ENV OPERATON_DB_VERSION=${VERSION}
 ENV DB_DRIVER=
 ENV DB_URL=
 ENV DB_USERNAME=
