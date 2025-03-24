@@ -28,6 +28,7 @@ COPY operaton-lib.sh /operaton/
 FROM alpine:3.21
 
 ARG VERSION=7.23.0
+ARG DISTRO
 
 ENV OPERATON_DB_VERSION=${VERSION}
 ENV DB_DRIVER=
@@ -74,3 +75,20 @@ ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["./operaton.sh"]
 
 COPY --chown=operaton:operaton --from=builder /operaton .
+
+COPY --chown=operaton:operaton --from=builder /tmp/operaton-app /tmp/operaton-app
+
+RUN case "$DISTRO" in \
+    wildfly) \
+        mv /tmp/operaton-app/standalone/deployments /operaton/standalone/deployments && \
+        mv /tmp/operaton-app/modules/org/operaton /operaton/modules/org/operaton ;; \
+    tomcat) \
+        mv /tmp/operaton-app/webapps /operaton/webapps && \
+        mv /tmp/operaton-app/lib/operaton-* /operaton/lib/ ;; \
+    run) \
+        mv /tmp/operaton-app/internal/operaton-bpm.jar /operaton/internal/operaton-bpm.jar && \
+        mv /tmp/operaton-app/internal/webapps/operaton-* /operaton/internal/webapps/ ;; \
+    *) \
+        echo "Unknown DISTRO: $DISTRO" && exit 1 ;; \
+esac && \
+    rm -rf /tmp/operaton-app

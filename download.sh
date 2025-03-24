@@ -49,6 +49,9 @@ wget "$distro_file_url"
 
 # Unpack distro to /operaton directory
 mkdir -p /operaton
+
+# Would contain the application files temporarily, to add them in a separate docker layer (please see the second stage of Dockerfile)
+mkdir -p /tmp/operaton-app
 case ${DISTRO} in
     run*) tar xzf "$distro_file_name" -C /operaton;;
     *)    tar xzf "$distro_file_name" -C /operaton server --strip 2;;
@@ -86,16 +89,30 @@ run-batch
 EOF
         /operaton/bin/jboss-cli.sh --file=batch.cli
         rm -rf /operaton/standalone/configuration/standalone_xml_history/current/*
+        # move application files temporarily, to add them again in a separate docker layer (please see the second stage of Dockerfile)
+        mkdir -p /tmp/operaton-app/standalone
+        mkdir -p /tmp/operaton-app/modules/org
+        mv /operaton/standalone/deployments /tmp/operaton-app/standalone/deployments
+        mv /operaton/modules/org/operaton /tmp/operaton-app/modules/org/operaton
         ;;
     run*)
         cp /tmp/mysql-connector-j-"${MYSQL_VERSION}".jar /operaton/configuration/userlib
         cp /tmp/postgresql-"${POSTGRESQL_VERSION}".jar /operaton/configuration/userlib
+        # move application files temporarily, to add them again in a separate docker layer  (please see the second stage of Dockerfile)
+        mkdir -p /tmp/operaton-app/internal
+        mkdir -p /tmp/operaton-app/internal/webapps
+        mv /operaton/internal/operaton-bpm.jar /tmp/operaton-app/internal/operaton-bpm.jar
+        mv /operaton/internal/webapps/operaton-* /tmp/operaton-app/internal/webapps/
         ;;
     tomcat*)
         cp /tmp/mysql-connector-j-"${MYSQL_VERSION}".jar /operaton/lib
         cp /tmp/postgresql-"${POSTGRESQL_VERSION}".jar /operaton/lib
         # remove default CATALINA_OPTS from environment settings
         echo "" > /operaton/bin/setenv.sh
+        # move application files temporarily, to add them again in a separate docker layer  (please see the second stage of Dockerfile)
+        mkdir -p /tmp/operaton-app/lib
+        mv /operaton/webapps /tmp/operaton-app/webapps
+        mv /operaton/lib/operaton-* /tmp/operaton-app/lib/
         ;;
 esac
 
