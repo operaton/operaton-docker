@@ -46,6 +46,7 @@ ENV WAIT_FOR_TIMEOUT=30
 ENV TZ=UTC
 ENV DEBUG=false
 ENV JAVA_OPTS=""
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 ENV JMX_PROMETHEUS=false
 ENV JMX_PROMETHEUS_CONF=/operaton/javaagent/prometheus-jmx.yml
 ENV JMX_PROMETHEUS_PORT=9404
