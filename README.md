@@ -152,16 +152,103 @@ we will not provide ready to use images for them.
 To override the default Java options the environment variable `JAVA_OPTS` can
 be set.
 
-### Use docker memory limits
+### Use Docker Memory Limits
 
-Instead of specifying the Java memory settings it is also possible to instruct
-the JVM to respect the docker memory settings. As the image uses Java 17 it does
-not have to be enabled explicitly using the `JAVA_OPTS` environment variable. 
-If you want to set the memory limits manually you can restore the pre-Java-11-behavior
-by setting the following environment variable.
+The Java JVM is container-aware by default. It automatically adjusts memory and CPU usage based on Docker container limits. This simplifies tuning and helps avoid over- or under-provisioning.
 
+**Default JVM Behavior Without Resource Limits**
+
+If you don't specify any memory or CPU limits on Docker, the container and therefore the JVM assumes it can use all host resources:
+
+- **Memory:** Heap defaults to 25% of full system memory
+- **CPU:** Thread pools (e.g., GC threads, ForkJoinPool) may scale to all available cores
+
+This may be fine for isolated development but can lead to excessive resource use in shared environments. Therefore, it's recommended to specify resource limits when starting Docker containers.
+
+```bash
+docker run -d --name operaton -p 8080:8080 \
+  --memory=1g --cpus=1 \
+  operaton/operaton:latest
 ```
-JAVA_OPTS="-XX:-UseContainerSupport"
+
+With these limits set, the JVM will:
+
+- Detect available memory and CPUs from the container
+- Use ~25% of container memory for the max heap size by default
+- Adjust thread pool sizing and JIT compiler threads based on CPU quota. For example, default thread pool size will be 1 in this case.
+
+Since 25% of 1GB may be too small for some applications, you can customize the heap size with MaxRAMPercentage to control how much of the container memory is used for the JVM heap:
+
+```bash
+docker run -d --name operaton -p 8080:8080 \
+  --memory=1g \
+  -e JAVA_OPTS="-XX:MaxRAMPercentage=70.0" \
+  operaton/operaton:latest
+```
+
+This sets the maximum heap size to 70% of the 1GB limit (~700MB).
+
+**Override CPU Core Detection**
+
+If needed, you can explicitly set how many CPU cores the JVM should assume using the `-XX:ActiveProcessorCount` flag:
+
+```bash
+-e JAVA_OPTS="-XX:ActiveProcessorCount=2"
+```
+
+This is useful in situations where container limits aren't accurately detected or you want to simulate a specific number of cores regardless of the environment.
+
+**Disable Container Awareness (Manual Tuning)**
+
+You can disable container support entirely and manage resources manually:
+
+```bash
+docker run -d --name operaton -p 8080:8080 \
+  -e JAVA_OPTS="-XX:-UseContainerSupport -Xmx768m -Xms512m" \
+  operaton/operaton:latest
+```
+
+
+> **Note on Container Platform Resource Management**
+>
+> In Kubernetes, resource limits are set in a Pod or container specification using the resources field, defining limits and requests for CPU and memory. In Podman, resource limits are configured using command-line flags like --memory, --cpus, and --cpu-shares when running containers. The JVM will automatically detect and adapt to these resource limits regardless of how they are configured in the container platform.
+
+**Inspecting JVM Configuration Parameters**
+
+To examine the actual JVM memory settings in use, you can display all configuration parameters when launching the container:
+
+```bash
+docker run -d --name operaton -p 8080:8080 \
+  --memory=1g \
+  -e JAVA_OPTS="-XX:+PrintFlagsFinal" \
+  operaton/operaton:latest
+```
+
+Extract and analyze the memory configuration by filtering the container logs:
+
+For Linux/macOS systems:
+```bash
+docker logs operaton | grep HeapSize
+```
+
+For Windows PowerShell:
+```powershell
+docker logs operaton | Select-String "HeapSize"
+```
+
+For Windows Command Prompt:
+```batch
+docker logs operaton | findstr "HeapSize"
+```
+
+These commands filter for heap-related settings in the JVM configuration. You can also search for other important parameters:
+
+```bash
+# For thread pool settings (Linux/macOS)
+docker logs operaton | grep "GCThreads\|ParallelGCThreads"
+
+# For container detection (Linux/macOS)
+docker logs operaton | grep "UseContainerSupport"
 ```
 
 ### Database environment variables
