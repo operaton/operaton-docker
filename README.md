@@ -154,39 +154,39 @@ be set.
 
 ### Use Docker Memory Limits
 
-The Java JVM is container-aware by default. It automatically adjusts memory and CPU usage based on Docker container limits. This simplifies tuning and helps avoid over- or under-provisioning.
+The Java JVM is container-aware by default, automatically adjusting to Docker container limits. Here's how to configure optimal memory settings for Operaton:
 
-**Default JVM Behavior Without Resource Limits**
+**Recommended Memory Configuration**
 
-If you don't specify any memory or CPU limits on Docker, the container and therefore the JVM assumes it can use all host resources:
-
-- **Memory:** Heap defaults to 25% of full system memory
-- **CPU:** Thread pools (e.g., GC threads, ForkJoinPool) may scale to all available cores
-
-This may be fine for isolated development but can lead to excessive resource use in shared environments. Therefore, it's recommended to specify resource limits when starting Docker containers.
+For most Operaton workloads, use these optimal settings:
 
 ```bash
 docker run -d --name operaton -p 8080:8080 \
-  --memory=1g --cpus=1 \
-  operaton/operaton:latest
-```
-
-With these limits set, the JVM will:
-
-- Detect available memory and CPUs from the container
-- Use ~25% of container memory for the max heap size by default
-- Adjust thread pool sizing and JIT compiler threads based on CPU quota. For example, default thread pool size will be 1 in this case.
-
-Since 25% of 1GB may be too small for some applications, you can customize the heap size with MaxRAMPercentage to control how much of the container memory is used for the JVM heap:
-
-```bash
-docker run -d --name operaton -p 8080:8080 \
-  --memory=1g \
+  --memory=2g \
   -e JAVA_OPTS="-XX:MaxRAMPercentage=70.0" \
   operaton/operaton:latest
 ```
 
-This sets the maximum heap size to 70% of the 1GB limit (~700MB).
+This allocates about 1.4GB for the JVM heap, which provides sufficient memory for Operaton while leaving room for non-heap memory requirements (native memory, thread stacks, etc.).
+
+For different workload sizes:
+- **Light usage**: 1GB container with 70% RAM allocation (~700MB heap)
+- **Moderate usage**: 2GB container with 70% RAM allocation (~1.4GB heap)
+- **Heavy usage**: 4GB container with 70% RAM allocation (~2.8GB heap)
+
+**Understanding JVM Container Behavior**
+
+Without explicit memory limits, the JVM assumes it can use all host resources:
+- The heap defaults to 25% of host system memory (often too small for Operaton)
+- Thread pools may scale to all available cores
+
+For proper resource management, always specify container limits:
+
+```bash
+docker run -d --name operaton -p 8080:8080 \
+  --memory=2g --cpus=2 \
+  operaton/operaton:latest
+```
 
 **Override CPU Core Detection**
 
