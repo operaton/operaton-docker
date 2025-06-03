@@ -152,16 +152,103 @@ we will not provide ready to use images for them.
 To override the default Java options the environment variable `JAVA_OPTS` can
 be set.
 
-### Use docker memory limits
+### Use Docker Memory Limits
 
-Instead of specifying the Java memory settings it is also possible to instruct
-the JVM to respect the docker memory settings. As the image uses Java 17 it does
-not have to be enabled explicitly using the `JAVA_OPTS` environment variable. 
-If you want to set the memory limits manually you can restore the pre-Java-11-behavior
-by setting the following environment variable.
+The Java JVM is container-aware by default, automatically adjusting to Docker container limits. Here's how to configure optimal memory settings for Operaton:
 
+**Recommended Memory Configuration**
+
+For most Operaton workloads, use these optimal settings:
+
+```bash
+docker run -d --name operaton -p 8080:8080 \
+  --memory=2g \
+  -e JAVA_OPTS="-XX:MaxRAMPercentage=70.0" \
+  operaton/operaton:latest
 ```
-JAVA_OPTS="-XX:-UseContainerSupport"
+
+This allocates about 1.4GB for the JVM heap, which provides sufficient memory for Operaton while leaving room for non-heap memory requirements (native memory, thread stacks, etc.).
+
+For different workload sizes:
+- **Light usage**: 1GB container with 70% RAM allocation (~700MB heap)
+- **Moderate usage**: 2GB container with 70% RAM allocation (~1.4GB heap)
+- **Heavy usage**: 4GB container with 70% RAM allocation (~2.8GB heap)
+
+**Understanding JVM Container Behavior**
+
+Without explicit memory limits, the JVM assumes it can use all host resources:
+- The heap defaults to 25% of host system memory (often too small for Operaton)
+- Thread pools may scale to all available cores
+
+For proper resource management, always specify container limits:
+
+```bash
+docker run -d --name operaton -p 8080:8080 \
+  --memory=2g --cpus=2 \
+  operaton/operaton:latest
+```
+
+**Override CPU Core Detection**
+
+If needed, you can explicitly set how many CPU cores the JVM should assume using the `-XX:ActiveProcessorCount` flag:
+
+```bash
+-e JAVA_OPTS="-XX:ActiveProcessorCount=2"
+```
+
+This is useful in situations where container limits aren't accurately detected or you want to simulate a specific number of cores regardless of the environment.
+
+**Disable Container Awareness (Manual Tuning)**
+
+You can disable container support entirely and manage resources manually:
+
+```bash
+docker run -d --name operaton -p 8080:8080 \
+  -e JAVA_OPTS="-XX:-UseContainerSupport -Xmx768m -Xms512m" \
+  operaton/operaton:latest
+```
+
+
+> **Note on Container Platform Resource Management**
+>
+> In Kubernetes, resource limits are set in a Pod or container specification using the resources field, defining limits and requests for CPU and memory. In Podman, resource limits are configured using command-line flags like --memory, --cpus, and --cpu-shares when running containers. The JVM will automatically detect and adapt to these resource limits regardless of how they are configured in the container platform.
+
+**Inspecting JVM Configuration Parameters**
+
+To examine the actual JVM memory settings in use, you can display all configuration parameters when launching the container:
+
+```bash
+docker run -d --name operaton -p 8080:8080 \
+  --memory=1g \
+  -e JAVA_OPTS="-XX:+PrintFlagsFinal" \
+  operaton/operaton:latest
+```
+
+Extract and analyze the memory configuration by filtering the container logs:
+
+For Linux/macOS systems:
+```bash
+docker logs operaton | grep HeapSize
+```
+
+For Windows PowerShell:
+```powershell
+docker logs operaton | Select-String "HeapSize"
+```
+
+For Windows Command Prompt:
+```batch
+docker logs operaton | findstr "HeapSize"
+```
+
+These commands filter for heap-related settings in the JVM configuration. You can also search for other important parameters:
+
+```bash
+# For thread pool settings (Linux/macOS)
+docker logs operaton | grep "GCThreads\|ParallelGCThreads"
+
+# For container detection (Linux/macOS)
+docker logs operaton | grep "UseContainerSupport"
 ```
 
 ### Database environment variables
