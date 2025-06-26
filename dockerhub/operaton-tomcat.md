@@ -29,11 +29,17 @@ The webapp context path can be customized using the `OPERATON_WEBAPP_NAME` envir
 
 ---
 
-## 🏗️ Running with an External Database (Production)
+## 🏗️ Running with an External Database
 
-To connect to an external RDBMS (e.g., MySQL, PostgreSQL), set the appropriate JDBC configuration.
+Depending on your database of choice, copy one of the configurations below into a file named `docker-compose.yaml`. Then, in the same directory, run:
 
-For example, to use **MySQL**, you might use the following `docker-compose.yml`:
+```bash
+docker compose up -d
+```
+
+The application will be accessible at [http://localhost:8080/operaton](http://localhost:8080/operaton)
+
+### 🐬 docker-compose.yaml for MySQL
 
 ```yaml
 services:
@@ -70,25 +76,7 @@ volumes:
     driver: local
 ```
 
-Modify the driver and JDBC URL accordingly for other databases such as PostgreSQL.
-
----
-
-## ⚙️ Configuration
-
-You can configure the container using the following environment variables:
-
-| Variable              | Description                                     | Example                                     |
-|-----------------------|-------------------------------------------------|---------------------------------------------|
-| `DB_DRIVER`           | JDBC driver class name                          | `org.postgresql.Driver`                     |
-| `DB_URL`              | JDBC connection URL                             | `jdbc:postgresql://db:5432/operaton`        |
-| `DB_USERNAME`         | Database username                               | `admin`                                     |
-| `DB_PASSWORD`         | Database password                               | `secret`                                    |
-| `OPERATON_WEBAPP_NAME`| Webapp context path                             | `operaton`                                  |
-
----
-
-## 🐘 Example: Using PostgreSQL
+### 🐘 docker-compose.yaml for PostgreSQL
 
 To run Operaton with a PostgreSQL database, use the following `docker-compose.yml` example:
 
@@ -116,8 +104,6 @@ services:
       - POSTGRES_DB=operaton
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgrespassword
-    ports:
-      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     restart: always
@@ -127,7 +113,71 @@ volumes:
     driver: local
 ```
 
-This setup initializes a PostgreSQL database and connects the application to it using standard JDBC settings.
+---
+## 🔄 Port 8080 Already in Use?
+
+If port `8080` is already being used on your machine, the container will fail to start because it cannot bind to that port. This is a common issue when running multiple services or development environments locally.
+
+To resolve this, **change the host port** in the port mapping section of your `docker run` or `docker-compose.yaml` file.
+
+### 🔧 Example (Inline Docker Run)
+
+Change:
+
+```bash
+-p 8080:8080
+```
+
+To use a different host port, like `8081`:
+
+```bash
+-p 8081:8080
+```
+
+In this example, `8081` is the port on your local machine, and `8080` is the port inside the container.
+
+
+### 🔧 Example (Docker Compose)
+
+In your `docker-compose.yaml`, change:
+
+```yaml
+ports:
+  - "8080:8080"
+```
+
+To something like:
+
+```yaml
+ports:
+  - "8081:8080"
+```
+
+This tells Docker to forward traffic from your host’s port `8081` to the container’s internal port `8080`.
+
+Save the changes, and re-run:
+
+```bash
+docker compose up -d
+```
+
+After the port has been changed to `8081` (inline or in `docker-compose.yaml`), access the application at:  
+[http://localhost:8081/operaton](http://localhost:8081/operaton)
+
+---
+
+## ⚙️ Configuration
+
+You can configure the container using the following environment variables:
+
+| Variable              | Description                                     | Example                                     |
+|-----------------------|-------------------------------------------------|---------------------------------------------|
+| `DB_DRIVER`           | JDBC driver class name                          | `org.postgresql.Driver`                     |
+| `DB_URL`              | JDBC connection URL                             | `jdbc:postgresql://db:5432/operaton`        |
+| `DB_USERNAME`         | Database username                               | `admin`                                     |
+| `DB_PASSWORD`         | Database password                               | `secret`                                    |
+| `OPERATON_WEBAPP_NAME`| Webapp context path                             | `operaton`                                  |
+
 ---
 
 ## 📂 Default Credentials
