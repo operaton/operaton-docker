@@ -54,21 +54,19 @@ to enable authentication for the REST API.
 
 ## Supported tags/releases
 
-The following tag schema is used. The user has the choice between different
-application server distributions of Operaton.
+Each distribution of Operaton - **Self-Contained**, **Tomcat**, and **Wildfly** - is published to its own Docker repository on Docker Hub. Below are the links to these repositories:
 
-- `latest`, `${DISTRO}-latest`: Always the latest minor release of Operaton.
-- `SNAPSHOT`, `${VERSION}-SNAPSHOT`, `${DISTRO}-SNAPSHOT`,
-  `${DISTRO}-${VERSION}-SNAPSHOT`: The latest SNAPSHOT version of Operaton, which is not released yet.
-- `${VERSION}`, `${DISTRO}-${VERSION}`: A specific version of Operaton.
+- [Operaton (Self-Contained)](https://hub.docker.com/r/operaton/operaton)
+- [Tomcat](https://hub.docker.com/r/operaton/tomcat)
+- [Wildfly](https://hub.docker.com/r/operaton/wildfly)
 
-`${DISTRO}` can be one of the following: 
-* `operaton`
-* `tomcat`
-* `wildfly`
+### Tag Schema
 
-If no `${DISTRO}` is specified, the `operaton` distribution is used. For all 
-available tags see the [docker hub tags][].
+Each of the repositories follows the tag schema below:
+
+- `latest`: Always points to the latest minor release of Operaton.
+- `SNAPSHOT`, `${VERSION}-SNAPSHOT`: A nightly build of the latest or a specific revision of Operaton. These are not officially released versions.
+- `${VERSION}`: A specific, officially released version of Operaton.
 
 ## Operaton configuration
 
