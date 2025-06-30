@@ -4,6 +4,8 @@ if [ "$DISTRO" == "run" ]; then
   IMAGE_NAME=${IMAGE_REPO_OPERATON}:${PLATFORM}
 elif [ "$DISTRO" == "tomcat" ]; then
   IMAGE_NAME=${IMAGE_REPO_TOMCAT}:${PLATFORM}
+elif [ "$DISTRO" == "wildfly" ]; then
+  IMAGE_NAME=${IMAGE_REPO_WILDFLY}:${PLATFORM}
 fi
 
 export IMAGE_NAME

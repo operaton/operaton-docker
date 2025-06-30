@@ -1,0 +1,53 @@
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        DISTRO: ["run"]
+        PLATFORM: ["amd64"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        if: ${{ matrix.PLATFORM != 'amd64' }}
+        with:
+          platforms: ${{ matrix.PLATFORM }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Expose GitHub Runtime
+        uses: actions/github-script@v7
+        with:
+          script: |
+            Object.keys(process.env).forEach(function (key) {
+              if (key.startsWith('ACTIONS_')) {
+                core.info(`${key}=${process.env[key]}`);
+                core.exportVariable(key, process.env[key]);
+              }
+            });
+      - name: Build
+        run: ./pipeline.sh
+        env:
+          DISTRO: ${{ matrix.DISTRO }}
+          PLATFORM: ${{ matrix.PLATFORM }}
+          VERSION: 1.0.0-beta-4
+          SNAPSHOT: false
+          IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
+          IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
+          IMAGE_REPO_WILDFLY: ${{ vars.IMAGE_REPO_WILDFLY }}
+      - name: Test
+        run: ./test.sh
+        working-directory: test
+        env:
+          DISTRO: ${{ matrix.DISTRO }}
+          PLATFORM: ${{ matrix.PLATFORM }}
+          VERSION: 1.0.0-beta-4
+          SNAPSHOT: false
+          IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
+          IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
+          IMAGE_REPO_WILDFLY: ${{ vars.IMAGE_REPO_WILDFLY }}
