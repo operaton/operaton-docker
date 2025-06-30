@@ -20,6 +20,8 @@ elif [ "$DISTRO" == "wildfly" ]; then
   IMAGE_NAME=${IMAGE_REPO_WILDFLY}:${PLATFORM}
 fi
 
+echo "Using distro $DISTRO with repo URL $IMAGE_REPO_OPERATON"
+
 docker buildx build .                         \
     -t "${IMAGE_NAME}"                        \
     --platform linux/${PLATFORM}              \
