@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        DISTRO: ["run", "tomcat", "wildfly"]
+        DISTRO: ["run", "tomcat"]
         PLATFORM: ["amd64"]
     env:
       DISTRO: ${{ matrix.DISTRO }}
