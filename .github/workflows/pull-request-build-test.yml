@@ -31,11 +31,6 @@ jobs:
               }
             });
       - name: Build
-        run: |
-          echo "IMAGE_REPO_OPERATON=$IMAGE_REPO_OPERATON"
-          echo "IMAGE_REPO_TOMCAT=$IMAGE_REPO_TOMCAT"
-          echo "IMAGE_REPO_WILDFLY=$IMAGE_REPO_WILDFLY"
-          ./pipeline.sh
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORM: ${{ matrix.PLATFORM }}
@@ -44,6 +39,14 @@ jobs:
           IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
           IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
           IMAGE_REPO_WILDFLY: ${{ vars.IMAGE_REPO_WILDFLY }}
+        run: |
+          echo "IMAGE_REPO_OPERATON=$IMAGE_REPO_OPERATON"
+          echo "IMAGE_REPO_TOMCAT=$IMAGE_REPO_TOMCAT"
+          echo "IMAGE_REPO_WILDFLY=$IMAGE_REPO_WILDFLY"
+          echo "vars.IMAGE_REPO_OPERATON=${{ vars.IMAGE_REPO_OPERATON }}"
+          echo "vars.IMAGE_REPO_TOMCAT=${{ vars.IMAGE_REPO_TOMCAT }}"
+          echo "vars.IMAGE_REPO_WILDFLY=${{ vars.IMAGE_REPO_WILDFLY }}"
+          ./pipeline.sh
       - name: Test
         run: ./test.sh
         working-directory: test
