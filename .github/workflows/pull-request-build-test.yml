@@ -31,7 +31,11 @@ jobs:
               }
             });
       - name: Build
-        run: ./pipeline.sh
+        run: |
+          echo "IMAGE_REPO_OPERATON=$IMAGE_REPO_OPERATON"
+          echo "IMAGE_REPO_TOMCAT=$IMAGE_REPO_TOMCAT"
+          echo "IMAGE_REPO_WILDFLY=$IMAGE_REPO_WILDFLY"
+          ./pipeline.sh
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORM: ${{ matrix.PLATFORM }}
