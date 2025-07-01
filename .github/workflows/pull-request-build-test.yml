@@ -59,3 +59,5 @@ jobs:
           IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
           IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
           IMAGE_REPO_WILDFLY: ${{ vars.IMAGE_REPO_WILDFLY }}
+
+
