@@ -1,4 +1,4 @@
-FROM alpine:3.21 AS builder
+FROM alpine:3.22 AS builder
 
 ARG VERSION
 ARG DISTRO=run
@@ -25,7 +25,7 @@ COPY operaton-lib.sh /operaton/
 
 ##### FINAL IMAGE #####
 
-FROM alpine:3.21
+FROM alpine:3.22
 
 ARG VERSION=7.23.0
 ARG DISTRO
