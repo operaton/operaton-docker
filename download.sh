@@ -33,7 +33,7 @@ if [ "${SNAPSHOT}" = "true" ]; then
     db_settings_pom_file=dbpom.xml
 else
    # extract the database settings file from the main artifact
-    mvn dependency:get -U -B --global-settings /tmp/settings.xml \
+    ./mvnw dependency:get -U -B --global-settings /tmp/settings.xml \
         -DgroupId="org.operaton.bpm" -DartifactId="operaton-database-settings" \
         -Dversion="${ARTIFACT_VERSION}" -Dpackaging="pom" -Dtransitive=false
 
@@ -70,10 +70,10 @@ if [ -z "$POSTGRESQL_VERSION" ]; then
     POSTGRESQL_VERSION=$(xmlstarlet sel -t -v //_:version.postgresql "$db_settings_pom_file")
 fi
 
-mvn dependency:copy -B \
+./mvnw dependency:copy -B \
     -Dartifact="com.mysql:mysql-connector-j:${MYSQL_VERSION}:jar" \
     -DoutputDirectory=/tmp/
-mvn dependency:copy -B \
+./mvnw dependency:copy -B \
     -Dartifact="org.postgresql:postgresql:${POSTGRESQL_VERSION}:jar" \
     -DoutputDirectory=/tmp/
 
@@ -121,7 +121,7 @@ EOF
 esac
 
 # download Prometheus JMX Exporter. 
-mvn dependency:copy -B \
+./mvnw dependency:copy -B \
     -Dartifact="io.prometheus.jmx:jmx_prometheus_javaagent:${JMX_PROMETHEUS_VERSION}:jar" \
     -DoutputDirectory=/tmp/
 
