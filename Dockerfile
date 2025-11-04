@@ -9,7 +9,7 @@ ARG MYSQL_VERSION
 
 ARG JMX_PROMETHEUS_VERSION=0.12.0
 
-RUN apk add --no-cache \
+RUN apk add -q --no-cache \
         bash \
         ca-certificates \
         maven \
@@ -55,7 +55,7 @@ EXPOSE 8080 8000 9404
 
 # Downgrading wait-for-it is necessary until this PR is merged
 # https://github.com/vishnubob/wait-for-it/pull/68
-RUN apk add --no-cache \
+RUN apk add -q --no-cache \
         bash \
         ca-certificates \
         curl \
