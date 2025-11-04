@@ -30,6 +30,7 @@ function build_and_push {
         $tag_arguments                            \
         --build-arg DISTRO=${DISTRO}              \
         --build-arg VERSION=${VERSION}            \
+        --build-arg SNAPSHOT=${SNAPSHOT}          \
         --cache-from type=gha,scope="$GITHUB_REF_NAME-$DISTRO-image" \
         --platform $PLATFORMS \
         --push
