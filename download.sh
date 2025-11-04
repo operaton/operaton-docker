@@ -7,6 +7,10 @@ if [ -z "$VERSION" ]; then
   echo "VERSION is not set"
   exit 1
 fi
+if [ -z "$DISTRO" ]; then
+  echo "DISTRO is not set"
+  exit 1
+fi
 
 echo "Downloading Operaton ${VERSION} for ${DISTRO}"
 
