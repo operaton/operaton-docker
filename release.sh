@@ -45,7 +45,7 @@ if [ $(docker manifest inspect $IMAGE:${VERSION} > /dev/null ; echo $?) == '0' ]
     exit 0
 fi
 
-docker login -u "${DOCKERHUB_USERNAME}" -p "${DOCKERHUB_PASSWORD}"
+echo "$DOCKERHUB_PASSWORD" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
 
 tags=()
 
