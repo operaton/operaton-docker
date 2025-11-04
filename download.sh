@@ -12,6 +12,9 @@ if [ -z "$DISTRO" ]; then
   exit 1
 fi
 
+echo "Setting up Maven Wrapper"
+mvn -N wrapper:wrapper -Dmaven=3.9.11
+
 echo "Downloading Operaton ${VERSION} for ${DISTRO}"
 
 if [ "$DISTRO" = "run" ]; then
