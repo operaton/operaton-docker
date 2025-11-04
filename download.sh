@@ -31,7 +31,7 @@ if [ "${SNAPSHOT}" = "true" ]; then
     ARTIFACT_BASE_URL="https://github.com/operaton/operaton/releases/download/early-access/"
 
     # get the database settings file from the main repo since snapshots are not published
-    wget https://raw.githubusercontent.com/operaton/operaton/refs/heads/main/database/pom.xml -O dbpom.xml
+    wget -q https://raw.githubusercontent.com/operaton/operaton/refs/heads/main/database/pom.xml -O dbpom.xml
     db_settings_pom_file=dbpom.xml
 else
    # extract the database settings file from the main artifact
@@ -51,7 +51,7 @@ esac
 distro_file_name="${ARTIFACT}-${ARTIFACT_VERSION}.tar.gz"
 distro_file_url="${ARTIFACT_BASE_URL}${ARTIFACT}-${ARTIFACT_VERSION}.tar.gz"
 
-wget "$distro_file_url"
+wget -q "$distro_file_url"
 
 # Unpack distro to /operaton directory
 mkdir -p /operaton
