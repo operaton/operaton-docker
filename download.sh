@@ -12,6 +12,8 @@ if [ -z "$DISTRO" ]; then
   exit 1
 fi
 
+export MAVEN_ARGS="-B -ntp --show-version"
+
 echo "Downloading Operaton ${VERSION} for ${DISTRO}"
 
 if [ "$DISTRO" = "run" ]; then
