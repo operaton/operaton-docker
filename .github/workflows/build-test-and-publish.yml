@@ -35,7 +35,7 @@ on:
     types: [published]
 jobs:
   build-and-test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -83,7 +83,7 @@ jobs:
           IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
           IMAGE_REPO_WILDFLY: ${{ vars.IMAGE_REPO_WILDFLY }}
   publish:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     needs: build-and-test
     strategy:
       matrix:
