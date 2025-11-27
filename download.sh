@@ -28,7 +28,7 @@ ARTIFACT_BASE_URL="https://github.com/operaton/operaton/releases/download/v${VER
 # Determine if SNAPSHOT version should be used
 if [ "${SNAPSHOT}" = "true" ]; then
     ARTIFACT_VERSION="${VERSION}-SNAPSHOT"
-    ARTIFACT_BASE_URL="https://github.com/operaton/operaton/releases/download/early-access/"
+    ARTIFACT_BASE_URL="https://github.com/operaton/operaton/releases/download/${ARTIFACT_VERSION}/"
 
     # get the database settings file from the main repo since snapshots are not published
     wget -q https://raw.githubusercontent.com/operaton/operaton/refs/heads/main/database/pom.xml -O dbpom.xml
