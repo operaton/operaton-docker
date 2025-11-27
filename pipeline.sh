@@ -12,6 +12,17 @@ else
   VERSION_ARGUMENT="--build-arg VERSION=${VERSION}"
 fi
 
+if [ -z "$IMAGE_REPO_OPERATON" ]; then
+  IMAGE_REPO_OPERATON="operaton/operaton"
+fi
+if [ -z "$IMAGE_REPO_TOMCAT" ]; then
+  IMAGE_REPO_TOMCAT="operaton/operaton-tomcat"
+fi
+if [ -z "$IMAGE_REPO_WILDFLY" ]; then
+  IMAGE_REPO_WILDFLY="operaton/operaton-wildfly"
+fi
+
+
 if [ "$DISTRO" == "run" ]; then
   IMAGE_NAME=${IMAGE_REPO_OPERATON}:${PLATFORM}
 elif [ "$DISTRO" == "tomcat" ]; then
