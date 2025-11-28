@@ -22,7 +22,6 @@ if [ -z "$IMAGE_REPO_WILDFLY" ]; then
   IMAGE_REPO_WILDFLY="operaton/operaton-wildfly"
 fi
 
-
 if [ "$DISTRO" == "run" ]; then
   IMAGE_NAME=${IMAGE_REPO_OPERATON}:${PLATFORM}
 elif [ "$DISTRO" == "tomcat" ]; then
