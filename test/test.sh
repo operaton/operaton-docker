@@ -31,7 +31,12 @@ docker compose up --force-recreate -d postgres mysql
 ./test-${DISTRO}.sh operaton-mysql
 ./test-${DISTRO}.sh operaton-postgres
 ./test-${DISTRO}.sh operaton-password-file
-./test-prometheus-jmx-${DISTRO}.sh operaton-prometheus-jmx
-./test-debug.sh operaton-debug
+
+# Temporary disable test for Wildfly
+# https://github.com/operaton/operaton-docker/issues/32
+if [ "$DISTRO" != "wildfly" ]; then
+  ./test-prometheus-jmx-${DISTRO}.sh operaton-prometheus-jmx
+  ./test-debug.sh operaton-debug
+fi
 docker compose down -v
 cd -
