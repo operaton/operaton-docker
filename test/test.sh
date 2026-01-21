@@ -26,7 +26,7 @@ cd ${DIR}
 
 source test_helper.sh
 
-docker compose up --force-recreate -d postgres mysql
+docker compose up --quiet-pull --force-recreate -d postgres mysql
 ./test-${DISTRO}.sh operaton
 ./test-${DISTRO}.sh operaton-mysql
 ./test-${DISTRO}.sh operaton-postgres
