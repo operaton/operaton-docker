@@ -19,7 +19,7 @@ function _exit {
 }
 
 function start_container {
-  docker compose up -d --no-recreate ${SERVICE} || _exit 1 "Unable to start compose"
+  docker compose up --quiet-pull -d --no-recreate ${SERVICE} || _exit 1 "Unable to start compose"
 }
 
 function container_id {
