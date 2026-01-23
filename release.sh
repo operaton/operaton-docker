@@ -54,7 +54,11 @@ if [ "${SNAPSHOT}" = "true" ]; then
     tags+=("SNAPSHOT")
 else
     tags+=("${VERSION}")
-    tags+=("latest")
+    # Only add "latest" tag if VERSION matches semantic versioning pattern `major.minor.patch`
+    # In other words, avoid tagging pre-releases with suffixes like -M1
+    if [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        tags+=("latest")
+    fi
 fi
 
 build_and_push "${tags[@]}"
