@@ -113,6 +113,7 @@ jobs:
           PLATFORMS: linux/arm64,linux/amd64
           VERSION: ${{ github.event.inputs.version || '' }}
           SNAPSHOT: ${{ github.event.inputs.snapshot || '' }}
+          SNAPSHOT_TAG_BRANCH: ${{ github.event.release.target_commitish || github.ref_name }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
           IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}

@@ -51,7 +51,10 @@ tags=()
 
 if [ "${SNAPSHOT}" = "true" ]; then
     tags+=("${VERSION}-SNAPSHOT")
-    tags+=("SNAPSHOT")
+    SNAPSHOT_TAG_BRANCH="${SNAPSHOT_TAG_BRANCH:-${GITHUB_REF_NAME:-}}"
+    if [ "${SNAPSHOT_TAG_BRANCH}" = "main" ]; then
+        tags+=("SNAPSHOT")
+    fi
 else
     tags+=("${VERSION}")
     # Only add "latest" tag if VERSION matches semantic versioning pattern `major.minor.patch`
