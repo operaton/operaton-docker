@@ -39,6 +39,62 @@ function build_and_push {
       printf -- "- $IMAGE:%s\n" "${tags[@]}" >> $GITHUB_STEP_SUMMARY
 }
 
+function get_highest_release_version {
+    local namespace repository url response next_url highest_version="" candidate
+
+    namespace="${IMAGE%%/*}"
+    repository="${IMAGE#*/}"
+    url="https://hub.docker.com/v2/namespaces/${namespace}/repositories/${repository}/tags?page_size=100"
+
+    while [ -n "${url}" ]; do
+        response="$(curl --fail --silent --show-error "${url}")" || return 1
+
+        while IFS= read -r candidate; do
+            if [ -z "${candidate}" ]; then
+                continue
+            fi
+
+            if [ -z "${highest_version}" ] || [ "$(printf '%s\n%s\n' "${highest_version}" "${candidate}" | sort -V | tail -n1)" = "${candidate}" ]; then
+                highest_version="${candidate}"
+            fi
+        done < <(
+            printf '%s' "${response}" | python3 -c 'import json, re, sys
+data = json.load(sys.stdin)
+for result in data.get("results", []):
+    name = result.get("name", "")
+    if re.fullmatch(r"\d+\.\d+\.\d+", name):
+        print(name)'
+        )
+
+        next_url="$(
+            printf '%s' "${response}" | python3 -c 'import json, sys
+print(json.load(sys.stdin).get("next") or "")'
+        )"
+        url="${next_url}"
+    done
+
+    printf '%s' "${highest_version}"
+}
+
+function should_tag_latest {
+    local highest_version
+
+    if ! [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        return 1
+    fi
+
+    highest_version="$(get_highest_release_version)" || {
+        echo "Unable to determine highest released version for ${IMAGE}" >&2
+        exit 1
+    }
+
+    if [ -z "${highest_version}" ]; then
+        return 0
+    fi
+
+    [ "$(printf '%s\n%s\n' "${highest_version}" "${VERSION}" | sort -V | tail -n1)" = "${VERSION}" ] && [ "${VERSION}" != "${highest_version}" ]
+}
+
 # check whether the image for distro was already released and exit in that case
 if [ $(docker manifest inspect $IMAGE:${VERSION} > /dev/null ; echo $?) == '0' ]; then
     echo "Not pushing already released image"
@@ -57,9 +113,7 @@ if [ "${SNAPSHOT}" = "true" ]; then
     fi
 else
     tags+=("${VERSION}")
-    # Only add "latest" tag if VERSION matches semantic versioning pattern `major.minor.patch`
-    # In other words, avoid tagging pre-releases with suffixes like -M1
-    if [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    if should_tag_latest; then
         tags+=("latest")
     fi
 fi
