@@ -64,7 +64,7 @@ Each distribution of Operaton - **Self-Contained**, **Tomcat**, and **Wildfly** 
 
 Each of the repositories follows the tag schema below:
 
-- `latest`: Always points to the latest minor release of Operaton.
+- `latest`: Always points to the highest released semantic version of Operaton.
 - `SNAPSHOT`, `${VERSION}-SNAPSHOT`: A nightly build of the latest or a specific revision of Operaton. These are not officially released versions.
 - `${VERSION}`: A specific, officially released version of Operaton.
 
