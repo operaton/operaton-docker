@@ -51,7 +51,7 @@ tags=()
 
 if [ "${SNAPSHOT}" = "true" ]; then
     tags+=("${VERSION}-SNAPSHOT")
-    SNAPSHOT_TAG_BRANCH=${SNAPSHOT_TAG_BRANCH:-$GITHUB_REF_NAME}
+    SNAPSHOT_TAG_BRANCH="${SNAPSHOT_TAG_BRANCH:-${GITHUB_REF_NAME:-}}"
     if [ "${SNAPSHOT_TAG_BRANCH}" = "main" ]; then
         tags+=("SNAPSHOT")
     fi
