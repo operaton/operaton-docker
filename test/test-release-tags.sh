@@ -62,6 +62,7 @@ MOCK_CURL_PAGE_2="${MOCK_DIR}/curl-page-2.json"
 cat > "${MOCK_CURL_PAGE_1}" <<'EOF'
 {"results":[{"name":"2.1.0"},{"name":"latest"},{"name":"2.0.3"}],"next":"https://hub.docker.com/v2/namespaces/operaton/repositories/operaton/tags?page=2"}
 EOF
+# The mocked "latest" tag verifies that release.sh ignores non-semantic tags.
 
 cat > "${MOCK_CURL_PAGE_2}" <<'EOF'
 {"results":[{"name":"1.9.9"},{"name":"2.1.0-M1"}],"next":null}
