@@ -19,6 +19,15 @@ on:
           - '["amd64"]'
           - '["arm64"]'
           - '["amd64", "arm64"]'
+      java_version:
+        description: 'The Java versions to build'
+        required: true
+        default: '["17", "21", "25"]'
+        options:
+          - '["17"]'
+          - '["21"]'
+          - '["25"]'
+          - '["17", "21", "25"]'
       version:
         description: 'The version to build (e.g. 1.1.0)'
         required: false
@@ -40,6 +49,7 @@ jobs:
       matrix:
         DISTRO: ${{ fromJson(github.event.inputs.distribution || '["run", "tomcat"]') }}
         PLATFORM: ${{ fromJson(github.event.inputs.platform || '["amd64", "arm64"]') }}
+        JAVA_VERSION: ${{ fromJson(github.event.inputs.java_version || '["17", "21", "25"]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,6 +75,7 @@ jobs:
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORM: ${{ matrix.PLATFORM }}
+          JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
           VERSION: ${{ github.event.inputs.version || '' }}
           SNAPSHOT: ${{ github.event.inputs.snapshot || '' }}
           IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
@@ -76,6 +87,7 @@ jobs:
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORM: ${{ matrix.PLATFORM }}
+          JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
           VERSION: ${{ github.event.inputs.version || '' }}
           SNAPSHOT: ${{ github.event.inputs.snapshot || '' }}
           IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
@@ -87,6 +99,7 @@ jobs:
     strategy:
       matrix:
         DISTRO: [run, tomcat, wildfly]
+        JAVA_VERSION: ${{ fromJson(github.event.inputs.java_version || '["17", "21", "25"]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -111,6 +124,7 @@ jobs:
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORMS: linux/arm64,linux/amd64
+          JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
           VERSION: ${{ github.event.inputs.version || '' }}
           SNAPSHOT: ${{ github.event.inputs.snapshot || '' }}
           SNAPSHOT_TAG_BRANCH: ${{ github.event.release.target_commitish || github.ref_name }}

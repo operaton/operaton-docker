@@ -29,6 +29,8 @@ FROM alpine:3.23
 
 ARG VERSION=7.23.0
 ARG DISTRO
+# Alpine package suffix, e.g. 17, 21 or 25
+ARG JAVA_VERSION=17
 
 ENV OPERATON_DB_VERSION=${VERSION}
 ENV DB_DRIVER=
@@ -46,7 +48,7 @@ ENV WAIT_FOR_TIMEOUT=30
 ENV TZ=UTC
 ENV DEBUG=false
 ENV JAVA_OPTS=""
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+ENV JAVA_HOME=/usr/lib/jvm/java-${JAVA_VERSION}-openjdk
 ENV JMX_PROMETHEUS=false
 ENV JMX_PROMETHEUS_CONF=/operaton/javaagent/prometheus-jmx.yml
 ENV JMX_PROMETHEUS_PORT=9404
@@ -59,7 +61,7 @@ RUN apk add -q --no-cache \
         bash \
         ca-certificates \
         curl \
-        openjdk17-jre-headless \
+        openjdk${JAVA_VERSION}-jre-headless \
         tzdata \
         tini \
         xmlstarlet \

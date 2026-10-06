@@ -11,9 +11,11 @@ jobs:
       matrix:
         DISTRO: ["run", "tomcat", "wildfly"]
         PLATFORM: ["amd64"]
+        JAVA_VERSION: ["17", "21", "25"]
     env:
       DISTRO: ${{ matrix.DISTRO }}
       PLATFORM: ${{ matrix.PLATFORM }}
+      JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
       VERSION: 1.1.0
       SNAPSHOT: true
       IMAGE_REPO_OPERATON: operaton/operaton

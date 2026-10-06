@@ -15,6 +15,13 @@ fi
 
 PLATFORMS=${PLATFORMS:-linux/amd64}
 
+JAVA_VERSION=${JAVA_VERSION:-17}
+if [ "$JAVA_VERSION" == "17" ]; then
+  JAVA_TAG_SUFFIX=""
+else
+  JAVA_TAG_SUFFIX="-jdk${JAVA_VERSION}"
+fi
+
 if [ "$DISTRO" == "run" ]; then
   IMAGE=${IMAGE_REPO_OPERATON}
 elif [ "$DISTRO" == "tomcat" ]; then
@@ -24,14 +31,22 @@ elif [ "$DISTRO" == "wildfly" ]; then
 fi
 
 function build_and_push {
-    local tags=("$@")
+    local tag tags=()
+    for tag in "$@"; do
+        tags+=("${tag}${JAVA_TAG_SUFFIX}")
+        # The default Java version is also published with an explicit suffix
+        if [ "$JAVA_VERSION" == "17" ]; then
+            tags+=("${tag}-jdk17")
+        fi
+    done
     printf -v tag_arguments -- "--tag $IMAGE:%s " "${tags[@]}"
     docker buildx build .                         \
         $tag_arguments                            \
         --build-arg DISTRO=${DISTRO}              \
         --build-arg VERSION=${VERSION}            \
         --build-arg SNAPSHOT=${SNAPSHOT}          \
-        --cache-from type=gha,scope="$GITHUB_REF_NAME-$DISTRO-image" \
+        --build-arg JAVA_VERSION=${JAVA_VERSION}  \
+        --cache-from type=gha,scope="$GITHUB_REF_NAME-$DISTRO-jdk$JAVA_VERSION-image" \
         --platform $PLATFORMS \
         --push
 
@@ -58,12 +73,14 @@ function get_highest_release_version {
                 highest_version="${candidate}"
             fi
         done < <(
+            # Only tags of the same Java version count, printed without their suffix
             printf '%s' "${response}" | python3 -c 'import json, re, sys
 data = json.load(sys.stdin)
 for result in data.get("results", []):
     name = result.get("name", "")
-    if re.fullmatch(r"\d+\.\d+\.\d+", name):
-        print(name)'
+    match = re.fullmatch(r"(\d+\.\d+\.\d+)" + re.escape(sys.argv[1]), name)
+    if match:
+        print(match.group(1))' "${JAVA_TAG_SUFFIX}"
         )
 
         next_url="$(
@@ -96,7 +113,7 @@ function should_tag_latest {
 }
 
 # check whether the image for distro was already released and exit in that case
-if [ $(docker manifest inspect $IMAGE:${VERSION} > /dev/null ; echo $?) == '0' ]; then
+if [ $(docker manifest inspect $IMAGE:${VERSION}${JAVA_TAG_SUFFIX} > /dev/null ; echo $?) == '0' ]; then
     echo "Not pushing already released image"
     exit 0
 fi
