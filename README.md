@@ -142,8 +142,13 @@ Operaton. This currently means:
 
  - Operaton 1.0 or later will be based on OpenJDK 17.
 
-While all the OpenJDK versions supported by Operaton will work with the exceptions specified above,
-we will not provide ready to use images for them.
+Images for OpenJDK 21 and 25 carry a `-jdk21` or `-jdk25` tag suffix (e.g. `1.1.0-jdk21`).
+OpenJDK 17 images are also tagged with `-jdk17`, identical to the tag without suffix.
+To build one yourself, pass the build argument `JAVA_VERSION` (default `17`):
+
+```
+docker build --build-arg DISTRO=run --build-arg JAVA_VERSION=21 -t operaton/operaton:jdk21 .
+```
 
 #### Java options
 

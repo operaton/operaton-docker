@@ -37,6 +37,7 @@ run_release() {
   local snapshot_tag_branch="$1"
   local version="$2"
   local snapshot="$3"
+  local java_version="${4:-17}"
   : > "${MOCK_DOCKER_CALLS}"
   : > "${MOCK_CURL_CALLS}"
   PATH="${MOCK_DIR}:${PATH}" \
@@ -47,6 +48,7 @@ run_release() {
     DISTRO="run" \
     VERSION="${version}" \
     SNAPSHOT="${snapshot}" \
+    JAVA_VERSION="${java_version}" \
     SNAPSHOT_TAG_BRANCH="${snapshot_tag_branch}" \
     DOCKERHUB_USERNAME="user" \
     DOCKERHUB_PASSWORD="pass" \
@@ -94,6 +96,8 @@ run_release "main" "2.1.1" "false"
 grep -q -- "--tag operaton/operaton:2.1.1" "${MOCK_DOCKER_CALLS}"
 grep -q -- "--tag operaton/operaton:latest" "${MOCK_DOCKER_CALLS}"
 grep -q -- "page=2" "${MOCK_CURL_CALLS}"
+grep -q -- "--tag operaton/operaton:2.1.1-jdk17 " "${MOCK_DOCKER_CALLS}"
+grep -q -- "--tag operaton/operaton:latest-jdk17 " "${MOCK_DOCKER_CALLS}"
 
 run_release "main" "2.1.1-M1" "false"
 grep -q -- "--tag operaton/operaton:2.1.1-M1" "${MOCK_DOCKER_CALLS}"
@@ -103,5 +107,28 @@ if grep -q -- "--tag operaton/operaton:latest" "${MOCK_DOCKER_CALLS}"; then
 fi
 if [ -s "${MOCK_CURL_CALLS}" ]; then
   echo "curl must not be called for pre-releases"
+  exit 1
+fi
+
+run_release "main" "2.1.1" "false" "21"
+grep -q -- "--tag operaton/operaton:2.1.1-jdk21" "${MOCK_DOCKER_CALLS}"
+grep -q -- "--tag operaton/operaton:latest-jdk21" "${MOCK_DOCKER_CALLS}"
+grep -q -- "--build-arg JAVA_VERSION=21" "${MOCK_DOCKER_CALLS}"
+if grep -q -- "jdk17" "${MOCK_DOCKER_CALLS}"; then
+  echo "jdk17 tags must only be added for Java 17"
+  exit 1
+fi
+grep -q -- "manifest inspect operaton/operaton:2.1.1-jdk21" "${MOCK_DOCKER_CALLS}"
+
+# Java 17 job already pushed 2.2.0, the Java 21 job must still get latest-jdk21
+cat > "${MOCK_CURL_PAGE_1}" <<'JSON'
+{"results":[{"name":"2.2.0"},{"name":"2.2.0-jdk17"},{"name":"2.1.0-jdk21"},{"name":"3.0.0-jdk25"}],"next":null}
+JSON
+run_release "main" "2.2.0" "false" "21"
+grep -q -- "--tag operaton/operaton:latest-jdk21" "${MOCK_DOCKER_CALLS}"
+
+run_release "main" "2.0.5" "false" "21"
+if grep -q -- "--tag operaton/operaton:latest-jdk21" "${MOCK_DOCKER_CALLS}"; then
+  echo "latest-jdk21 must not be added when a higher jdk21 release already exists"
   exit 1
 fi
