@@ -87,7 +87,7 @@ function verify_sbom_attestation {
 # OS packages and the JRE of the base image as well as the Operaton libraries,
 # and publishes it as a keyless signed attestation next to the image
 function attest_sboms {
-    local image_ref="$1" label="$2" platform_images line digest platform sbom
+    local image_ref="$1" label="$2" platform_images line digest platform sbom attempt
     platform_images="$(list_platform_images "${image_ref}")"
     if [ -z "${platform_images}" ]; then
         echo "No platform images found for ${image_ref}" >&2
@@ -121,7 +121,16 @@ with open(sys.argv[1], "w") as file:
     json.dump(sbom, file, indent=2)' "${sbom}"
 
         cosign attest --yes --type cyclonedx --predicate "${sbom}" "${IMAGE}@${digest}"
-        verify_sbom_attestation "${IMAGE}@${digest}"
+        # Docker Hub lists new referrers with a short delay
+        for attempt in 1 2 3 4 5 6; do
+            if verify_sbom_attestation "${IMAGE}@${digest}"; then
+                break
+            elif [ "${attempt}" -eq 6 ]; then
+                echo "SBOM attestation for ${IMAGE}@${digest} could not be verified" >&2
+                exit 1
+            fi
+            sleep "${ATTESTATION_RETRY_DELAY:-10}"
+        done
         echo "- ${platform}: \`${IMAGE}@${digest}\`" >> $GITHUB_STEP_SUMMARY
     done
 }

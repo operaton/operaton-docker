@@ -101,6 +101,8 @@ jobs:
       # Keyless signing of the SBOM attestations
       id-token: write
     strategy:
+      # A failing distro must not cancel the others in the middle of a push
+      fail-fast: false
       matrix:
         DISTRO: [run, tomcat, wildfly]
         JAVA_VERSION: ${{ fromJson(github.event.inputs.java_version || '["17", "21", "25"]') }}

@@ -58,7 +58,16 @@ set -euo pipefail
 echo "cosign $*" >> "${MOCK_SBOM_CALLS}"
 if [ "$1" = "attest" ]; then
   echo "${!#}" >> "${MOCK_ATTESTED}"
+  # Like Docker Hub, list the new attestation only on a later lookup
+  if [ "${MOCK_REFERRER_LAG:-false}" = "true" ]; then
+    echo "${!#}" >> "${MOCK_ATTESTED}.lag"
+  fi
 elif [ "$1" = "verify-attestation" ]; then
+  if grep -qxF -- "${!#}" "${MOCK_ATTESTED}.lag" 2> /dev/null; then
+    grep -vxF -- "${!#}" "${MOCK_ATTESTED}.lag" > "${MOCK_ATTESTED}.tmp" || true
+    mv "${MOCK_ATTESTED}.tmp" "${MOCK_ATTESTED}.lag"
+    exit 1
+  fi
   grep -qxF -- "${!#}" "${MOCK_ATTESTED}"
 fi
 EOF
@@ -97,6 +106,7 @@ run_release() {
     MOCK_SBOM_CALLS="${MOCK_SBOM_CALLS}" \
     MOCK_ATTESTED="${MOCK_ATTESTED}" \
     SBOM_DIR="${MOCK_DIR}/sbom" \
+    ATTESTATION_RETRY_DELAY=0 \
     GITHUB_WORKFLOW_REF="operaton/operaton-docker/.github/workflows/build-test-and-publish.yml@refs/heads/main" \
     DISTRO="run" \
     VERSION="${version}" \
@@ -219,5 +229,13 @@ grep -q -- "buildx imagetools inspect --raw operaton/operaton:2.3.0" "${MOCK_DOC
 grep -q -- "cosign attest .* operaton/operaton@sha256:arm" "${MOCK_SBOM_CALLS}"
 if grep -q -- "cosign attest .* operaton/operaton@sha256:amd" "${MOCK_SBOM_CALLS}"; then
   echo "Existing attestations must not be duplicated"
+  exit 1
+fi
+
+# Attestations that the registry lists with a delay are verified again
+: > "${MOCK_ATTESTED}"
+MOCK_REFERRER_LAG=true run_release "main" "2.4.0" "false"
+if [ "$(grep -c -- "cosign verify-attestation .* operaton/operaton@sha256:amd" "${MOCK_SBOM_CALLS}")" -ne 3 ]; then
+  echo "A lagging attestation must be verified again"
   exit 1
 fi
