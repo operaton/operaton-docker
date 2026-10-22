@@ -9,7 +9,7 @@ cat > event.json <<EOF
   "inputs": {
     "version": "1.1.0",
     "snapshot": "true",
-    "distribution": "[\"run\"]",
+    "distribution": "[\"operaton\"]",
     "platform": "[\"amd64\"]"
   }
 }

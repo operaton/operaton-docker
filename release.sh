@@ -22,7 +22,12 @@ else
   JAVA_TAG_SUFFIX="-jdk${JAVA_VERSION}"
 fi
 
+# "run" is the legacy name of the "operaton" distribution
 if [ "$DISTRO" == "run" ]; then
+  DISTRO="operaton"
+fi
+
+if [ "$DISTRO" == "operaton" ]; then
   IMAGE=${IMAGE_REPO_OPERATON}
 elif [ "$DISTRO" == "tomcat" ]; then
   IMAGE=${IMAGE_REPO_TOMCAT}

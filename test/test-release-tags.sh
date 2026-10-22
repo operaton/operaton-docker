@@ -108,7 +108,7 @@ run_release() {
     SBOM_DIR="${MOCK_DIR}/sbom" \
     ATTESTATION_RETRY_DELAY=0 \
     GITHUB_WORKFLOW_REF="operaton/operaton-docker/.github/workflows/build-test-and-publish.yml@refs/heads/main" \
-    DISTRO="run" \
+    DISTRO="operaton" \
     VERSION="${version}" \
     SNAPSHOT="${snapshot}" \
     JAVA_VERSION="${java_version}" \

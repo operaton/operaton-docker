@@ -14,9 +14,15 @@ fi
 
 export MAVEN_ARGS="-B -ntp --show-version"
 
+# "run" is the legacy name of the "operaton" distribution
+if [ "$DISTRO" = "run" ]; then
+  echo "DISTRO 'run' is deprecated, use 'operaton' instead"
+  DISTRO="operaton"
+fi
+
 echo "Downloading Operaton ${VERSION} for ${DISTRO}"
 
-if [ "$DISTRO" = "run" ]; then
+if [ "$DISTRO" = "operaton" ]; then
   ARTIFACT="operaton-bpm"
 else
   ARTIFACT="operaton-bpm-${DISTRO}"
@@ -42,6 +48,39 @@ else
     db_settings_pom_file=$(find /m2-repository -name "operaton-database-settings-${ARTIFACT_VERSION}.pom" -print | head -n 1)
 fi
 
+# Swagger UI is not part of the operaton distribution, so the image provides it.
+# The static files are served by Spring Boot below /swaggerui when operaton.sh is started with --swaggerui.
+install_swaggerui() {
+    SWAGGERUI_DIR=/operaton/internal/swaggerui/swaggerui
+    OPENAPI_ARTIFACT_URL="https://repo1.maven.org/maven2/org/operaton/bpm/operaton-engine-rest-openapi"
+
+    # SNAPSHOT versions are not published to Maven Central, fall back to the latest published version
+    OPENAPI_VERSION="${ARTIFACT_VERSION}"
+    if ! wget -q --spider "${OPENAPI_ARTIFACT_URL}/${OPENAPI_VERSION}/operaton-engine-rest-openapi-${OPENAPI_VERSION}.jar"; then
+        OPENAPI_VERSION=$(wget -q -O - "${OPENAPI_ARTIFACT_URL}/maven-metadata.xml" | xmlstarlet sel -t -v //latest)
+        echo "OpenAPI specification for ${ARTIFACT_VERSION} not available, using ${OPENAPI_VERSION}"
+    fi
+
+    mvn dependency:copy -B \
+        -Dartifact="org.webjars:swagger-ui:${SWAGGER_UI_VERSION}:jar" \
+        -DoutputDirectory=/tmp/
+    mvn dependency:copy -B \
+        -Dartifact="org.operaton.bpm:operaton-engine-rest-openapi:${OPENAPI_VERSION}:jar" \
+        -DoutputDirectory=/tmp/
+
+    mkdir -p /tmp/swagger-ui "${SWAGGERUI_DIR}"
+    unzip -q /tmp/swagger-ui-"${SWAGGER_UI_VERSION}".jar -d /tmp/swagger-ui
+    cp -r /tmp/swagger-ui/META-INF/resources/webjars/swagger-ui/"${SWAGGER_UI_VERSION}"/. "${SWAGGERUI_DIR}"
+
+    # Add the REST API of the running instance as first (default) server, relative to the Swagger UI origin
+    unzip -p /tmp/operaton-engine-rest-openapi-"${OPENAPI_VERSION}".jar openapi.json \
+        | jq -c '.servers = [{"url": "/engine-rest", "description": "The REST API of this Operaton instance"}] + .servers' \
+        > "${SWAGGERUI_DIR}/openapi.json"
+    jq -e .openapi "${SWAGGERUI_DIR}/openapi.json" > /dev/null
+    sed -i 's#url: "https://petstore.swagger.io/v2/swagger.json"#url: "./openapi.json"#' "${SWAGGERUI_DIR}/swagger-initializer.js"
+    grep -q '"./openapi.json"' "${SWAGGERUI_DIR}/swagger-initializer.js"
+}
+
 # Determine artifact group, all wildfly version have the same group
 case ${DISTRO} in
     wildfly*) GROUP="wildfly" ;;
@@ -59,7 +98,7 @@ mkdir -p /operaton
 # Would contain the application files temporarily, to add them in a separate docker layer (please see the second stage of Dockerfile)
 mkdir -p /tmp/operaton-app
 case ${DISTRO} in
-    run*) tar xzf "$distro_file_name" -C /operaton;;
+    operaton) tar xzf "$distro_file_name" -C /operaton;;
     *)    tar xzf "$distro_file_name" -C /operaton server --strip 2;;
 esac
 cp /tmp/operaton-"${GROUP}".sh /operaton/operaton.sh
@@ -101,7 +140,7 @@ EOF
         mv /operaton/standalone/deployments /tmp/operaton-app/standalone/deployments
         mv /operaton/modules/org/operaton /tmp/operaton-app/modules/org/operaton
         ;;
-    run*)
+    operaton)
         cp /tmp/mysql-connector-j-"${MYSQL_VERSION}".jar /operaton/configuration/userlib
         cp /tmp/postgresql-"${POSTGRESQL_VERSION}".jar /operaton/configuration/userlib
         # move application files temporarily, to add them again in a separate docker layer  (please see the second stage of Dockerfile)
@@ -109,6 +148,7 @@ EOF
         mkdir -p /tmp/operaton-app/internal/webapps
         mv /operaton/internal/operaton-bpm.jar /tmp/operaton-app/internal/operaton-bpm.jar
         mv /operaton/internal/webapps/operaton-* /tmp/operaton-app/internal/webapps/
+        install_swaggerui
         ;;
     tomcat*)
         cp /tmp/mysql-connector-j-"${MYSQL_VERSION}".jar /operaton/lib

@@ -5,12 +5,12 @@ on:
       distribution:
         description: 'The distribution to build'
         required: true
-        default: '["run", "tomcat", "wildfly"]'
+        default: '["operaton", "tomcat", "wildfly"]'
         options:
-          - '["run"]'
+          - '["operaton"]'
           - '["tomcat"]'
           - '["wildfly"]'
-          - '["run", "tomcat", "wildfly"]'
+          - '["operaton", "tomcat", "wildfly"]'
       platform:
         description: 'The platform to build for'
         required: true
@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        DISTRO: ${{ fromJson(github.event.inputs.distribution || '["run", "tomcat"]') }}
+        DISTRO: ${{ fromJson(github.event.inputs.distribution || '["operaton", "tomcat"]') }}
         PLATFORM: ${{ fromJson(github.event.inputs.platform || '["amd64", "arm64"]') }}
         JAVA_VERSION: ${{ fromJson(github.event.inputs.java_version || '["17", "21", "25"]') }}
     steps:
@@ -104,7 +104,7 @@ jobs:
       # A failing distro must not cancel the others in the middle of a push
       fail-fast: false
       matrix:
-        DISTRO: [run, tomcat, wildfly]
+        DISTRO: [operaton, tomcat, wildfly]
         JAVA_VERSION: ${{ fromJson(github.event.inputs.java_version || '["17", "21", "25"]') }}
     steps:
       - name: Checkout

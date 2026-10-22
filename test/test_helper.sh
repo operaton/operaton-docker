@@ -67,3 +67,8 @@ function test_encoding {
   curl --fail -w "\n" http://localhost:8080/engine-rest/deployment/create -F deployment-name=testEncoding -F testEncoding.bpmn=@testEncoding.bpmn
   curl --fail -w "\n" -H "Content-Type: application/json" -d '{}'  http://localhost:8080/engine-rest/process-definition/key/testEncoding/start
 }
+
+function test_swaggerui {
+  curl --fail -s -o/dev/null http://localhost:8080/swaggerui/index.html
+  curl --fail -s http://localhost:8080/swaggerui/openapi.json | grep -q '"/engine-rest"'
+}
