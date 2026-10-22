@@ -45,6 +45,14 @@ The default credentials for admin access to the web apps is:
 - Username: `demo`
 - Password: `demo`
 
+#### New web apps
+
+Starting with Operaton 2.2.0, the `tomcat` and `wildfly` images also contain the
+new Operaton web apps. They are disabled by default; in that case
+http://localhost:8080/ redirects to the web apps at http://localhost:8080/operaton/.
+See [Enable the new web apps](#enable-the-new-web-apps) for how to serve them at
+http://localhost:8080/ instead.
+
 ### REST API
 
 The Operaton REST API is accessible through: http://localhost:8080/engine-rest
@@ -211,6 +219,28 @@ as the default server. The OpenAPI specification is taken from the
 Snapshot images use the latest published specification, because snapshot
 versions of it are not published.
 
+### Enable the new web apps
+
+The `tomcat` and `wildfly` images (Operaton 2.2.0 or later) contain the new
+Operaton web apps, which are disabled by default. To enable them, set the
+environment variable `OPERATON_BPM_WEBAPP_NEO_ENABLED=true`:
+
+```bash
+docker run -d --name operaton -p 8080:8080 \
+           -e OPERATON_BPM_WEBAPP_NEO_ENABLED=true \
+           operaton/tomcat:latest
+```
+
+The new web apps are then served at http://localhost:8080/. The web apps at
+http://localhost:8080/operaton/ and the REST API stay available.
+
+Alternatively, the system property `operaton.bpm.webapp.neo.enabled=true` can be
+passed via `JAVA_OPTS`; it takes precedence over the environment variable. Prefer
+the environment variable, though: in the `wildfly` image, setting `JAVA_OPTS`
+replaces the default Java options (see [Java options](#java-options)). The
+commented example in the Tomcat distribution's `bin/setenv.sh` does not apply to
+the `tomcat` image, because the image replaces `setenv.sh` with an empty file.
+
 ### Java versions
 
 Our docker images are using a LTS OpenJDK version supported by
@@ -230,6 +260,11 @@ docker build --build-arg DISTRO=operaton --build-arg JAVA_VERSION=21 -t operaton
 
 To override the default Java options the environment variable `JAVA_OPTS` can
 be set.
+
+In the `wildfly` image, a non-empty `JAVA_OPTS` replaces all defaults from
+`bin/standalone.conf`, including the heap and metaspace settings
+(`-Xms512m -Xmx768m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=256m`).
+Include them in `JAVA_OPTS` if you still need them.
 
 ### Use Docker Memory Limits
 
@@ -446,9 +481,11 @@ structure depends on the distribution:
   additional libraries (e.g. JDBC drivers) go to `/operaton/configuration/userlib/`, 
   and BPMN resources to deploy go to `/operaton/configuration/resources/`.
 - `tomcat`: the Apache Tomcat configuration files are in `/operaton/conf/`
-  and the deployments are in `/operaton/webapps/`.
+  and the deployments are in `/operaton/webapps/`. The new web apps are
+  deployed as `/operaton/webapps/ROOT/`.
 - `wildfly`: the WildFly configuration files are in `/operaton/standalone/configuration/`
-  and the deployments are in `/operaton/standalone/deployments/`.
+  and the deployments are in `/operaton/standalone/deployments/`. The new web
+  apps are deployed as `operaton-webapp-neo-wildfly-<version>.war`.
 
 ### Debug
 
@@ -610,6 +647,9 @@ docker run -d --name operaton -p 8080:8080 \
            -v $PWD/webapps/:/operaton/webapps/ \
            operaton/tomcat:latest
 ```
+
+This also removes the new web apps (`ROOT`). In WildFly, mount the directory to
+`/operaton/standalone/deployments/` instead.
 
 For the `operaton` image, use the [startup options](#startup-options) instead.
 
