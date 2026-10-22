@@ -82,6 +82,29 @@ Each of the repositories follows the tag schema below:
 
 Each tag is also available with a `-jdk17`, `-jdk21`, or `-jdk25` suffix, see [Java versions](#java-versions).
 
+### SBOM
+
+Every published platform image carries a signed [CycloneDX](https://cyclonedx.org/) SBOM attestation, generated with [trivy](https://trivy.dev/). Unlike `/operaton/sbom.cdx.json` inside the image, which only describes the Operaton distribution, it also covers the OS packages and the JRE of the base image.
+
+SBOM attestations are only available for images published after their introduction. They are attached to the platform specific digests, so look these up first:
+
+```shell
+docker buildx imagetools inspect operaton/operaton:latest
+```
+
+Then verify the attestation and extract the SBOM with [cosign](https://docs.sigstore.dev/cosign/):
+
+```shell
+cosign verify-attestation \
+  --type cyclonedx \
+  --certificate-identity-regexp '^https://github\.com/operaton/operaton-docker/\.github/workflows/build-test-and-publish\.yml@' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  operaton/operaton@sha256:<platform digest> \
+  | jq -r '.payload' | base64 -d | jq '.predicate' > sbom.cdx.json
+```
+
+The SBOMs are also available as artifacts of the publishing workflow run.
+
 ## Operaton configuration
 
 You can find the complete Operaton documentation at https://docs.operaton.org/.

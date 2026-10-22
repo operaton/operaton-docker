@@ -96,7 +96,13 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: build-and-test
+    permissions:
+      contents: read
+      # Keyless signing of the SBOM attestations
+      id-token: write
     strategy:
+      # A failing distro must not cancel the others in the middle of a push
+      fail-fast: false
       matrix:
         DISTRO: [operaton, tomcat, wildfly]
         JAVA_VERSION: ${{ fromJson(github.event.inputs.java_version || '["17", "21", "25"]') }}
@@ -119,11 +125,27 @@ jobs:
                 core.exportVariable(key, process.env[key]);
               }
             });
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.1.3
+      - name: Install trivy
+        env:
+          TRIVY_VERSION: 0.75.0
+          TRIVY_SHA256: c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f
+        run: |
+          mkdir -p "$RUNNER_TEMP/trivy"
+          curl -fsSLo "$RUNNER_TEMP/trivy.tar.gz" \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  $RUNNER_TEMP/trivy.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/trivy.tar.gz" -C "$RUNNER_TEMP/trivy" trivy
+          echo "$RUNNER_TEMP/trivy" >> "$GITHUB_PATH"
       - name: Publish multi-platform images
         run: ./release.sh
         env:
           DISTRO: ${{ matrix.DISTRO }}
           PLATFORMS: linux/arm64,linux/amd64
+          SBOM_DIR: sbom
           JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
           VERSION: ${{ github.event.inputs.version || '' }}
           SNAPSHOT: ${{ github.event.inputs.snapshot || '' }}
@@ -133,3 +155,10 @@ jobs:
           IMAGE_REPO_OPERATON: ${{ vars.IMAGE_REPO_OPERATON }}
           IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
           IMAGE_REPO_WILDFLY: ${{ vars.IMAGE_REPO_WILDFLY }}
+      - name: Upload SBOMs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: sbom-${{ matrix.DISTRO }}-jdk${{ matrix.JAVA_VERSION }}
+          path: sbom/
+          if-no-files-found: ignore
