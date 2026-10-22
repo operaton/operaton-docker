@@ -45,7 +45,7 @@ run_release() {
     MOCK_CURL_CALLS="${MOCK_CURL_CALLS}" \
     MOCK_CURL_PAGE_1="${MOCK_CURL_PAGE_1}" \
     MOCK_CURL_PAGE_2="${MOCK_CURL_PAGE_2}" \
-    DISTRO="run" \
+    DISTRO="operaton" \
     VERSION="${version}" \
     SNAPSHOT="${snapshot}" \
     JAVA_VERSION="${java_version}" \

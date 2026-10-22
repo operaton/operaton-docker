@@ -18,7 +18,11 @@ test_login tasklist || _exit 5 "Unable to login to tasklist"
 
 _log "Login successful"
 
+test_swaggerui || _exit 6 "Swagger UI not available"
+
+_log "Swagger UI available"
+
 # Disabled encoding test ...
-# test_encoding || _exit 6 "Wrong encoding detected"
+# test_encoding || _exit 7 "Wrong encoding detected"
 
 _exit 0 "Test successful"

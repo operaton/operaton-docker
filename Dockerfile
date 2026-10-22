@@ -1,23 +1,25 @@
 FROM alpine:3.23 AS builder
 
 ARG VERSION
-ARG DISTRO=run
+ARG DISTRO=operaton
 ARG SNAPSHOT=true
 
 ARG POSTGRESQL_VERSION
 ARG MYSQL_VERSION
 
 ARG JMX_PROMETHEUS_VERSION=0.12.0
+ARG SWAGGER_UI_VERSION=5.32.0
 
 RUN apk add -q --no-cache \
         bash \
         ca-certificates \
+        jq \
         maven \
         tar \
         wget \
         xmlstarlet
 
-COPY settings.xml download.sh operaton-run.sh operaton-tomcat.sh operaton-wildfly.sh  /tmp/
+COPY settings.xml download.sh operaton-operaton.sh operaton-tomcat.sh operaton-wildfly.sh  /tmp/
 
 RUN /tmp/download.sh ${VERSION} ${DISTRO}
 COPY operaton-lib.sh /operaton/
@@ -28,7 +30,7 @@ COPY operaton-lib.sh /operaton/
 FROM alpine:3.23
 
 ARG VERSION=7.23.0
-ARG DISTRO
+ARG DISTRO=operaton
 # Alpine package suffix, e.g. 17, 21 or 25
 ARG JAVA_VERSION=17
 
@@ -88,7 +90,7 @@ RUN case "$DISTRO" in \
     tomcat) \
         mv /tmp/operaton-app/webapps /operaton/webapps && \
         mv /tmp/operaton-app/lib/operaton-* /operaton/lib/ ;; \
-    run) \
+    operaton | run) \
         mv /tmp/operaton-app/internal/operaton-bpm.jar /operaton/internal/operaton-bpm.jar && \
         mv /tmp/operaton-app/internal/webapps/operaton-* /operaton/internal/webapps/ ;; \
     *) \

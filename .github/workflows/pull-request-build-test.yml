@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        DISTRO: ["run", "tomcat", "wildfly"]
+        DISTRO: ["operaton", "tomcat", "wildfly"]
         PLATFORM: ["amd64"]
         JAVA_VERSION: ["17", "21", "25"]
     env:
