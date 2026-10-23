@@ -36,6 +36,14 @@ on:
         type: boolean
         required: false
         default: true
+      tag_latest:
+        description: "Tag 'latest': 'auto' if the version is the highest release, 'false' never (e.g. patch releases of an older line)"
+        type: choice
+        required: false
+        default: 'auto'
+        options:
+          - 'auto'
+          - 'false'
 
   release:
     repositories:
@@ -149,6 +157,7 @@ jobs:
           JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
           VERSION: ${{ github.event.inputs.version || '' }}
           SNAPSHOT: ${{ github.event.inputs.snapshot || '' }}
+          TAG_LATEST: ${{ github.event.inputs.tag_latest || 'auto' }}
           SNAPSHOT_TAG_BRANCH: ${{ github.event.release.target_commitish || github.ref_name }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
