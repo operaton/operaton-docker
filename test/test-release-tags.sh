@@ -111,6 +111,7 @@ run_release() {
     DISTRO="operaton" \
     VERSION="${version}" \
     SNAPSHOT="${snapshot}" \
+    TAG_LATEST="${TAG_LATEST:-auto}" \
     JAVA_VERSION="${java_version}" \
     SNAPSHOT_TAG_BRANCH="${snapshot_tag_branch}" \
     DOCKERHUB_USERNAME="user" \
@@ -164,6 +165,22 @@ grep -q -- "--tag operaton/operaton:latest" "${MOCK_DOCKER_CALLS}"
 grep -q -- "page=2" "${MOCK_CURL_CALLS}"
 grep -q -- "--tag operaton/operaton:2.1.1-jdk17 " "${MOCK_DOCKER_CALLS}"
 grep -q -- "--tag operaton/operaton:latest-jdk17 " "${MOCK_DOCKER_CALLS}"
+
+TAG_LATEST=false run_release "main" "2.1.1" "false"
+grep -q -- "--tag operaton/operaton:2.1.1" "${MOCK_DOCKER_CALLS}"
+if grep -q -- "--tag operaton/operaton:latest" "${MOCK_DOCKER_CALLS}"; then
+  echo "latest tag must not be added when TAG_LATEST=false"
+  exit 1
+fi
+if [ -s "${MOCK_CURL_CALLS}" ]; then
+  echo "curl must not be called when TAG_LATEST=false"
+  exit 1
+fi
+
+if TAG_LATEST=yes run_release "main" "2.1.1" "false"; then
+  echo "invalid TAG_LATEST values must be rejected"
+  exit 1
+fi
 
 run_release "main" "2.1.1-M1" "false"
 grep -q -- "--tag operaton/operaton:2.1.1-M1" "${MOCK_DOCKER_CALLS}"

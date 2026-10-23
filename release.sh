@@ -13,6 +13,13 @@ if [ -z "$SNAPSHOT" ]; then
   exit 1
 fi
 
+# "auto" tags latest when VERSION is the highest release on Docker Hub, "false" never tags latest
+TAG_LATEST=${TAG_LATEST:-auto}
+if [ "$TAG_LATEST" != "auto" ] && [ "$TAG_LATEST" != "false" ]; then
+  echo "TAG_LATEST must be 'auto' or 'false', got '$TAG_LATEST'"
+  exit 1
+fi
+
 PLATFORMS=${PLATFORMS:-linux/amd64}
 
 JAVA_VERSION=${JAVA_VERSION:-17}
@@ -181,6 +188,10 @@ print(json.load(sys.stdin).get("next") or "")'
 
 function should_tag_latest {
     local highest_version
+
+    if [ "${TAG_LATEST}" = "false" ]; then
+        return 1
+    fi
 
     if ! [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         return 1
