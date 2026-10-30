@@ -16,7 +16,6 @@ jobs:
       DISTRO: ${{ matrix.DISTRO }}
       PLATFORM: ${{ matrix.PLATFORM }}
       JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
-      VERSION: 1.1.0
       SNAPSHOT: true
       IMAGE_REPO_OPERATON: operaton/operaton
       IMAGE_REPO_TOMCAT: operaton/tomcat
@@ -24,6 +23,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # Old snapshot pre-releases get removed, so build against the newest one instead of a fixed version
+      - name: Determine snapshot version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(gh release list -R operaton/operaton --limit 100 --json tagName --jq '.[].tagName' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+-SNAPSHOT$' | sed 's/-SNAPSHOT$//' | sort -V | tail -n1)
+          if [ -z "$VERSION" ]; then
+            echo "No snapshot pre-release found in operaton/operaton"
+            exit 1
+          fi
+          echo "Using snapshot version ${VERSION}"
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         if: ${{ matrix.PLATFORM != 'amd64' }}

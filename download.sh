@@ -11,6 +11,11 @@ if [ -z "$DISTRO" ]; then
   echo "DISTRO is not set"
   exit 1
 fi
+# Fail early on malformed input (e.g. an unexpanded variable from a dispatching workflow) instead of a 404 on download
+if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$'; then
+  echo "VERSION '${VERSION}' is not a valid version (expected e.g. 1.1.0 or 2.0.0-M3)"
+  exit 1
+fi
 
 export MAVEN_ARGS="-B -ntp --show-version"
 
