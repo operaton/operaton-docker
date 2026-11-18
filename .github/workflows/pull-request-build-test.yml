@@ -16,7 +16,6 @@ jobs:
       DISTRO: ${{ matrix.DISTRO }}
       PLATFORM: ${{ matrix.PLATFORM }}
       JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
-      VERSION: 1.1.0
       SNAPSHOT: true
       IMAGE_REPO_OPERATON: operaton/operaton
       IMAGE_REPO_TOMCAT: operaton/tomcat
@@ -41,6 +40,15 @@ jobs:
                 core.exportVariable(key, process.env[key]);
               }
             });
+      - name: Determine snapshot version
+        # Use the newest snapshot pre-release, since old snapshot releases are removed
+        run: |
+          VERSION=$(gh release list -R operaton/operaton --exclude-drafts --json tagName,isPrerelease \
+            --jq '[.[] | select(.isPrerelease and (.tagName | endswith("-SNAPSHOT")))][0].tagName | rtrimstr("-SNAPSHOT")')
+          test -n "$VERSION"
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Build
         run: ./pipeline.sh
       - name: Test
