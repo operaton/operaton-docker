@@ -59,11 +59,19 @@ EXPOSE 8080 8000 9404
 
 # Downgrading wait-for-it is necessary until this PR is merged
 # https://github.com/vishnubob/wait-for-it/pull/68
-RUN apk add -q --no-cache \
+# The minimum JRE versions contain the fix for CVE-2026-114938. They also
+# keep a cached layer with an older JRE from being reused.
+RUN case "$JAVA_VERSION" in \
+        17) JRE_MIN_VERSION=17.0.21.1_p2-r0 ;; \
+        21) JRE_MIN_VERSION=21.0.13.1_p2-r0 ;; \
+        25) JRE_MIN_VERSION=25.0.5.1_p2-r0 ;; \
+        *) echo "Unsupported JAVA_VERSION: $JAVA_VERSION" && exit 1 ;; \
+    esac && \
+    apk add -q --no-cache \
         bash \
         ca-certificates \
         curl \
-        openjdk${JAVA_VERSION}-jre-headless \
+        "openjdk${JAVA_VERSION}-jre-headless>=${JRE_MIN_VERSION}" \
         tzdata \
         tini \
         xmlstarlet \
